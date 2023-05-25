@@ -1,8 +1,20 @@
 using Microsoft.EntityFrameworkCore;
 using MySqlConnector;
 using Testing_System.Data;
+using Testing_System.Services.Hash;
+using Testing_System.Services.Kdf;
+using Testing_System.Services.Random;
+using Testing_System.Services.RandomImg;
+using Testing_System.Services.Validation;
 
 var builder = WebApplication.CreateBuilder(args);
+
+builder.Services.AddSingleton<IHashService, Md5HashService>();
+builder.Services.AddSingleton<IKdfService, HashKdfService>();
+builder.Services.AddSingleton<IRandomImgName, RandomImgName>();
+builder.Services.AddSingleton<IValidationService, ValidationService>();
+builder.Services.AddSingleton<IRandomService, RandomService>();
+
 
 // Add services to the container.
 builder.Services.AddControllersWithViews();

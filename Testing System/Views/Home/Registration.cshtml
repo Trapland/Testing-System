@@ -1,50 +1,60 @@
-﻿@{
+﻿@model Testing_System.Models.User.Registration
+
+@{
     ViewData["Title"] = "Registration Page";
 }
 
 
 <div class="container m-2 d-flex flex-column justify-content-center">
     <h2 class="text-center">Registration</h2><br />
-    <form>
+    <form method="post" asp-controller="Home" asp-action="Register" enctype="multipart/form-data">
         <div class="form-group d-flex justify-content-center">
             <div style="width:350px">
                 <label for="name">Name</label>
-                <input type="text" class="form-control" id="name" placeholder="Enter your name">
-            </div>
-        </div> 
-        <div class="form-group d-flex justify-content-center">
-            <div style="width:350px">
-
-                <label for="surname">Surname</label>
-                <input type="text" class="form-control" id="surname" placeholder="Enter your surname">
+                <input type="text" asp-for="Name" class="form-control" id="name" placeholder="Enter your name">
             </div>
         </div>
         <div class="form-group d-flex justify-content-center">
             <div style="width:350px">
 
+                <label for="surname">Surname</label>
+                <input type="text" asp-for="Surname" class="form-control" id="surname" placeholder="Enter your surname">
+            </div>
+        </div>
+
+        <div class="form-group d-flex justify-content-center">
+            <div style="width:350px">
+
                 <label for="email">Email address</label>
-                <input type="email" class="form-control" id="email" placeholder="Enter your email">
+                <input type="email" asp-for="Email" class="form-control" id="email" placeholder="Enter your email">
+            </div>
+        </div>
+        <div class="form-group d-flex justify-content-center">
+            <div style="width:350px">
+
+                <label for="login">Login</label>
+                <input type="text" asp-for="Login" class="form-control" id="login" placeholder="Enter your login">
             </div>
         </div>
         <div class="form-group d-flex justify-content-center">
             <div style="width:350px">
 
                 <label for="password">Password</label>
-                <input type="password" class="form-control" id="password" placeholder="Enter your password">
+                <input type="password" asp-for="Password" class="form-control" id="password" placeholder="Enter your password">
             </div>
         </div>
         <div class="form-group d-flex justify-content-center">
             <div style="width:350px">
 
                 <label for="confirmPassword">Confirm Password</label>
-                <input type="password" class="form-control" id="confirmPassword" placeholder="Confirm your password">
+                <input type="password" asp-for="RepeatPassword" class="form-control" id="confirmPassword" placeholder="Confirm your password">
             </div>
         </div>
         <div class="mb-3 d-flex justify-content-center">
             <div style="width:350px">
 
                 <label for="Avatar">Choose Avatar</label>
-                <input class="form-control" type="file" for="Avatar">
+                <input class="form-control" asp-for="Avatar" type="file" for="Avatar">
             </div>
         </div>
         <div class="d-flex justify-content-center w-100">
