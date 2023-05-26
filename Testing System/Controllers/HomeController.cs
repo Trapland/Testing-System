@@ -63,12 +63,24 @@ namespace Testing_System.Controllers
                     registerValidation.LoginMessage = "This login is already exists";
                     isModelValid = false;
                 }
+
+                if (_dataContext.Students.Any(s => s.Email == registrationModel.Email))
+                {
+                    registerValidation.EmailMessage = "This email is already exists";
+                    isModelValid = false;
+                }
             }
             else if (registrationModel.Option == "teacher")
             {
                 if (_dataContext.Teachers.Any(t => t.Login == registrationModel.Login))
                 {
                     registerValidation.LoginMessage = "This login is already exists";
+                    isModelValid = false;
+                }
+
+                if (_dataContext.Teachers.Any(t => t.Email == registrationModel.Email))
+                {
+                    registerValidation.EmailMessage = "This email is already exists";
                     isModelValid = false;
                 }
             }
@@ -95,11 +107,6 @@ namespace Testing_System.Controllers
             else if (!_validationService.Validate(registrationModel.Email, ValidationTerms.Email))
             {
                 registerValidation.EmailMessage = "Email is incorrect";
-                isModelValid = false;
-            }
-            else if(_dataContext.Students.Any(s => s.Email == registrationModel.Email))
-            {
-                registerValidation.EmailMessage = "This email is already exists";
                 isModelValid = false;
             }
 
