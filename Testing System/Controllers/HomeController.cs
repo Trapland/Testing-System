@@ -53,48 +53,64 @@ namespace Testing_System.Controllers
 
             if (String.IsNullOrEmpty(registrationModel.Login))
             {
-                registerValidation.LoginMessage = "Логін не може бути порожним";
+                registerValidation.LoginMessage = "Login can`t be empty";
                 isModelValid = false;
             }
-            if (_dataContext.Students.Any(s => s.Login == registrationModel.Login))
+            if (registrationModel.Option == "student")
             {
-                registerValidation.LoginMessage = "Логін вже використовується";
-                isModelValid = false;
+                if (_dataContext.Students.Any(s => s.Login == registrationModel.Login))
+                {
+                    registerValidation.LoginMessage = "This login is already exists";
+                    isModelValid = false;
+                }
             }
-            if (String.IsNullOrEmpty(registrationModel.Password))
+            else if (registrationModel.Option == "teacher")
             {
-                registerValidation.PasswordMessage = "Пароль не може бути порожним";
+                if (_dataContext.Teachers.Any(t => t.Login == registrationModel.Login))
+                {
+                    registerValidation.LoginMessage = "This login is already exists";
+                    isModelValid = false;
+                }
+            }
+                if (String.IsNullOrEmpty(registrationModel.Password))
+            {
+                registerValidation.PasswordMessage = "Password can`t be empty";
                 isModelValid = false;
             }
             if (String.IsNullOrEmpty(registrationModel.RepeatPassword))
             {
-                registerValidation.RepeatPasswordMessage = "Повтор пароля не може бути порожним";
+                registerValidation.RepeatPasswordMessage = "Confirm Password can`t be empty";
                 isModelValid = false;
             }
             else if (registrationModel.RepeatPassword != registrationModel.Password)
             {
-                registerValidation.RepeatPasswordMessage = "Паролі не співпадають";
+                registerValidation.RepeatPasswordMessage = "Passwords are not the same";
                 isModelValid = false;
             }
             if (!_validationService.Validate(registrationModel.Email, ValidationTerms.NotEmpty))
             {
-                registerValidation.EmailMessage = "Email не може бути порожним";
+                registerValidation.EmailMessage = "Email can`t be empty";
                 isModelValid = false;
             }
             else if (!_validationService.Validate(registrationModel.Email, ValidationTerms.Email))
             {
-                registerValidation.EmailMessage = "Email введено не корректно";
+                registerValidation.EmailMessage = "Email is incorrect";
                 isModelValid = false;
             }
             else if(_dataContext.Students.Any(s => s.Email == registrationModel.Email))
             {
-                registerValidation.EmailMessage = "Email вже використовується";
+                registerValidation.EmailMessage = "This email is already exists";
                 isModelValid = false;
             }
 
             if (String.IsNullOrEmpty(registrationModel.Name))
             {
-                registerValidation.NameMessage = "Name не може бути порожним";
+                registerValidation.NameMessage = "Name can`t be empty";
+                isModelValid = false;
+            }
+            if (String.IsNullOrEmpty(registrationModel.Surname))
+            {
+                registerValidation.SurnameMessage = "Surname can`t be empty";
                 isModelValid = false;
             }
             String savedName = "";
@@ -121,7 +137,6 @@ namespace Testing_System.Controllers
                     String path = folderName + savedName;
                     using FileStream fs = new(path, FileMode.Create);
                     registrationModel.Avatar.CopyTo(fs);
-                    ViewData["savedName"] = savedName;
                 }
                 else
                 {
@@ -129,29 +144,46 @@ namespace Testing_System.Controllers
                     registerValidation.AvatarMessage = "Avatar size is too small";
                 }
             }
-
             if (isModelValid)
             {
                 String salt = _randomService.RandomString(16);
-                Student student = new()
+                if (registrationModel.Option == "student")
                 {
-                    Id = Guid.NewGuid(),
-                    Login = registrationModel.Login,
-                    Name = registrationModel.Name,
-                    Surname = registrationModel.Surname,
-                    Email = registrationModel.Email,
-                    PasswordSalt = salt,
-                    PasswordHash = _kdfService.GetDerivedKey(registrationModel.Password, salt),
-                    Avatar = savedName
-                };
-                _dataContext.Students.Add(student);
-                _dataContext.SaveChangesAsync();
+                    Student student = new()
+                    {
+                        Id = Guid.NewGuid(),
+                        Login = registrationModel.Login,
+                        Name = registrationModel.Name,
+                        Surname = registrationModel.Surname,
+                        Email = registrationModel.Email,
+                        PasswordSalt = salt,
+                        PasswordHash = _kdfService.GetDerivedKey(registrationModel.Password, salt),
+                        Avatar = savedName
+                    };
+                    _dataContext.Students.Add(student);
+                    _dataContext.SaveChangesAsync();
+                }
+                else if(registrationModel.Option == "teacher")
+                {
+                    Teacher teacher = new()
+                    {
+                        Id = Guid.NewGuid(),
+                        Login = registrationModel.Login,
+                        Name = registrationModel.Name,
+                        Surname = registrationModel.Surname,
+                        Email = registrationModel.Email,
+                        PasswordSalt = salt,
+                        PasswordHash = _kdfService.GetDerivedKey(registrationModel.Password, salt),
+                        Avatar = savedName
+                    };
+                    _dataContext.Teachers.Add(teacher);
+                    _dataContext.SaveChangesAsync();
+                }    
 
-                return View("Index");
+                    return View("Index");
             }
             else
             {
-                ViewData["regModel"] = registrationModel;
                 ViewData["RegisterValidationResult"] = registerValidation;
                 return View("Registration");
             }

@@ -15,5 +15,8 @@
         public String Surname { get; set; } = null!;
 
         public IFormFile Avatar { get; set; } = null!;
+
+        public String Option { get; set; } = null!;
+
     }
 }

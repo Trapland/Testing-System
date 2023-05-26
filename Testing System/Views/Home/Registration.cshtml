@@ -1,7 +1,9 @@
 ﻿@model Testing_System.Models.User.Registration
+@using Testing_System.Models.User
 
 @{
     ViewData["Title"] = "Registration Page";
+    var registerValidation = ViewData["RegisterValidationResult"] as RegisterValidationResult;
 }
 
 
@@ -9,16 +11,43 @@
     <h2 class="text-center">Registration</h2><br />
     <form method="post" asp-controller="Home" asp-action="Register" enctype="multipart/form-data">
         <div class="form-group d-flex justify-content-center">
+            <div>
+                <label for="option">Choose your role</label><br />
+                <select asp-for="Option" class="form-control" style="width:350px;">
+                    <option value="student">Student</option>
+                    <option value="teacher">Teacher</option>
+                </select>
+            </div>
+        </div>
+        <div class="form-group d-flex justify-content-center">
             <div style="width:350px">
                 <label for="name">Name</label>
-                <input type="text" asp-for="Name" class="form-control" id="name" placeholder="Enter your name">
+                <input type="text" asp-for="Name" class="form-control @(
+                registerValidation is null
+                ? ""
+               :(registerValidation.NameMessage is null
+               ? "is-valid"
+               : "is-invalid"))" id="name" placeholder="Enter your name">
+                @if (registerValidation?.NameMessage is not null)
+                {
+                    <div class="invalid-feedback">@registerValidation.NameMessage</div>
+                }
             </div>
         </div>
         <div class="form-group d-flex justify-content-center">
             <div style="width:350px">
 
                 <label for="surname">Surname</label>
-                <input type="text" asp-for="Surname" class="form-control" id="surname" placeholder="Enter your surname">
+                <input type="text" asp-for="Surname" class="form-control @(
+                registerValidation is null
+                ? ""
+               :(registerValidation.SurnameMessage is null
+               ? "is-valid"
+               : "is-invalid"))" id="surname" placeholder="Enter your surname">
+                @if (registerValidation?.SurnameMessage is not null)
+                {
+                    <div class="invalid-feedback">@registerValidation.SurnameMessage</div>
+                }
             </div>
         </div>
 
@@ -26,35 +55,81 @@
             <div style="width:350px">
 
                 <label for="email">Email address</label>
-                <input type="email" asp-for="Email" class="form-control" id="email" placeholder="Enter your email">
+                <input type="email" asp-for="Email" class="form-control @(
+                registerValidation is null
+                ? ""
+               :(registerValidation.EmailMessage is null
+               ? "is-valid"
+               : "is-invalid"))" id="email" placeholder="Enter your email">
+                @if (registerValidation?.EmailMessage is not null)
+                {
+                    <div class="invalid-feedback">@registerValidation.EmailMessage</div>
+                }
             </div>
         </div>
         <div class="form-group d-flex justify-content-center">
             <div style="width:350px">
 
                 <label for="login">Login</label>
-                <input type="text" asp-for="Login" class="form-control" id="login" placeholder="Enter your login">
+                <input type="text" asp-for="Login" class="form-control @(
+                registerValidation is null
+                ? ""
+               :(registerValidation.LoginMessage is null
+               ? "is-valid"
+               : "is-invalid"))" id="login" placeholder="Enter your login">
+                @if (registerValidation?.LoginMessage is not null)
+                {
+                    <div class="invalid-feedback">@registerValidation.LoginMessage</div>
+                }
             </div>
         </div>
         <div class="form-group d-flex justify-content-center">
             <div style="width:350px">
 
                 <label for="password">Password</label>
-                <input type="password" asp-for="Password" class="form-control" id="password" placeholder="Enter your password">
+                <input type="password" asp-for="Password" class="form-control @(
+                registerValidation is null
+                ? ""
+               :(registerValidation.PasswordMessage is null
+               ? "is-valid"
+               : "is-invalid"))" id="password" placeholder="Enter your password">
+                @if (registerValidation?.PasswordMessage is not null)
+                {
+                    <div class="invalid-feedback">@registerValidation.PasswordMessage</div>
+                }
             </div>
+
         </div>
         <div class="form-group d-flex justify-content-center">
             <div style="width:350px">
 
                 <label for="confirmPassword">Confirm Password</label>
-                <input type="password" asp-for="RepeatPassword" class="form-control" id="confirmPassword" placeholder="Confirm your password">
+                <input type="password" asp-for="RepeatPassword" class="form-control @(
+                registerValidation is null
+                ? ""
+               :(registerValidation.RepeatPasswordMessage is null
+               ? "is-valid"
+               : "is-invalid"))" id="confirmPassword" placeholder="Confirm your password">
+                @if (registerValidation?.RepeatPasswordMessage is not null)
+                {
+                    <div class="invalid-feedback">@registerValidation.RepeatPasswordMessage</div>
+                }
             </div>
         </div>
         <div class="mb-3 d-flex justify-content-center">
             <div style="width:350px">
 
                 <label for="Avatar">Choose Avatar</label>
-                <input class="form-control" asp-for="Avatar" type="file" for="Avatar">
+                <input class="form-control @(
+                registerValidation is null
+                ? ""
+               :(registerValidation.AvatarMessage is null
+               ? "is-valid"
+               : "is-invalid"))" asp-for="Avatar" type="file" for="Avatar">
+                @if (registerValidation?.AvatarMessage is not null)
+                {
+                    <div class="invalid-feedback">@registerValidation.AvatarMessage</div>
+                }
             </div>
         </div>
         <div class="d-flex justify-content-center w-100">
