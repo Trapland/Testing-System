@@ -1,6 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using MySqlConnector;
 using Testing_System.Data;
+using Testing_System.Middleware;
 using Testing_System.Services.Hash;
 using Testing_System.Services.Kdf;
 using Testing_System.Services.Random;
@@ -24,6 +25,15 @@ MySqlConnection connection = new(connectionString);
 builder.Services.AddDbContext<DataContext>(options =>
     options.UseMySql(connection, ServerVersion.AutoDetect(connection)));
 
+builder.Services.AddDistributedMemoryCache();
+
+builder.Services.AddSession(options =>
+{
+    options.IdleTimeout = TimeSpan.FromMinutes(60);
+    options.Cookie.HttpOnly = true;
+    options.Cookie.IsEssential = true;
+});
+
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
@@ -39,7 +49,12 @@ app.UseStaticFiles();
 
 app.UseRouting();
 
+app.UseSession();
+
 app.UseAuthorization();
+
+app.UseSessionAuth();
+
 
 app.MapControllerRoute(
     name: "default",

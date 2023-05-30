@@ -1,5 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Primitives;
 using System.Diagnostics;
+using System.Security.Claims;
 using Testing_System.Data;
 using Testing_System.Data.Entity;
 using Testing_System.Models;
@@ -46,7 +48,7 @@ namespace Testing_System.Controllers
         }
 
 
-    public ActionResult Register(Registration registrationModel)
+        public ActionResult Register(Registration registrationModel)
         {
             bool isModelValid = true;
             RegisterValidationResult registerValidation = new();
@@ -84,7 +86,7 @@ namespace Testing_System.Controllers
                     isModelValid = false;
                 }
             }
-                if (String.IsNullOrEmpty(registrationModel.Password))
+            if (String.IsNullOrEmpty(registrationModel.Password))
             {
                 registerValidation.PasswordMessage = "Password can`t be empty";
                 isModelValid = false;
@@ -170,7 +172,7 @@ namespace Testing_System.Controllers
                     _dataContext.Students.Add(student);
                     _dataContext.SaveChangesAsync();
                 }
-                else if(registrationModel.Option == "teacher")
+                else if (registrationModel.Option == "teacher")
                 {
                     Teacher teacher = new()
                     {
@@ -185,14 +187,124 @@ namespace Testing_System.Controllers
                     };
                     _dataContext.Teachers.Add(teacher);
                     _dataContext.SaveChangesAsync();
-                }    
+                }
 
-                    return View("Index");
+                return View("Index");
             }
             else
             {
                 ViewData["RegisterValidationResult"] = registerValidation;
                 return View("Registration");
+            }
+
+        }
+
+        [HttpPost]
+        public String AuthUser()
+        {
+            StringValues optionValues = Request.Form["user-option"];
+            if (optionValues.Count == 0)
+            {
+                return "Missed required parameter: user-option";
+            }
+
+            StringValues loginValues = Request.Form["user-login"];
+            if (loginValues.Count == 0)
+            {
+                return "Missed required parameter: user-login";
+            }
+            String login = loginValues[0] ?? "";
+
+            StringValues passwordValues = Request.Form["user-password"];
+            if (passwordValues.Count == 0)
+            {
+                return "Missed required parameter: user-password";
+            }
+            String password = passwordValues[0] ?? "";
+            if (optionValues == "student")
+            {
+                Student? student = _dataContext.Students.Where(s => s.Login == login).FirstOrDefault();
+                if (student is not null)
+                {
+                    if (student.PasswordHash == _kdfService.GetDerivedKey(password, student.PasswordSalt))
+                    {
+                        HttpContext.Session.SetString("authUserId", student.Id.ToString());
+                        HttpContext.Session.SetString("userStatus", optionValues);
+
+                        return "OK";
+                    }
+
+                }
+            }
+            else if( optionValues == "teacher")
+            {
+                Teacher? teacher = _dataContext.Teachers.Where(t => t.Login == login).FirstOrDefault();
+                if (teacher is not null)
+                {
+                    if (teacher.PasswordHash == _kdfService.GetDerivedKey(password, teacher.PasswordSalt))
+                    {
+                        HttpContext.Session.SetString("authUserId", teacher.Id.ToString());
+                        HttpContext.Session.SetString("userStatus", optionValues);
+
+                        return "OK";
+                    }
+
+                }
+            }    
+            return "Авторизацію відхилено";
+        }
+
+        public RedirectToActionResult Logout()
+        {
+            HttpContext.Session.Remove("authUserId");
+            return RedirectToAction("Index", "Home");
+        }
+
+        public IActionResult Profile([FromRoute] String id)
+        {
+            _logger.LogInformation(id);
+            String? userStatus = HttpContext.Session.GetString("userStatus");
+            if(userStatus == "student")
+            {
+                Student? user = _dataContext.Students.FirstOrDefault(u => u.Login == id);
+                if (user is not null)
+                {
+                    StudentProfileModel model = new(user);
+                    if (HttpContext.User.Identity is not null &&
+                        HttpContext.User.Identity.IsAuthenticated)
+                    {
+                        String userLogin = HttpContext.User.Claims.First(c => c.Type == ClaimTypes.NameIdentifier).Value;
+                    }
+                    return View(model);
+
+                }
+                else
+                {
+                    return NotFound();
+                }
+            }
+            else if(userStatus == "teacher")
+            {
+                Teacher? user = _dataContext.Teachers.FirstOrDefault(u => u.Login == id);
+                if (user is not null)
+                {
+                    TeacherProfileModel model = new(user);
+                    if (HttpContext.User.Identity is not null &&
+                        HttpContext.User.Identity.IsAuthenticated)
+                    {
+                        String userLogin = HttpContext.User.Claims.First(c => c.Type == ClaimTypes.NameIdentifier).Value;
+                    }
+                    return View(model);
+
+                }
+                else
+                {
+                    return NotFound();
+                }
+            }    
+            else
+            {
+                return NotFound();
             }
 
         }

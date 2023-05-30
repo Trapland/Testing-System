@@ -1,4 +1,6 @@
-﻿<!DOCTYPE html>
+﻿@using System.Security.Claims;
+
+<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="utf-8" />
@@ -29,12 +31,39 @@
                     </ul>
                 </div>*@
             </div>
-            <button title="Login" type="button" class="btn btn-outline-primary mx-3" data-bs-toggle="modal" data-bs-target="#exampleModal">
-                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-box-arrow-in-right" viewBox="0 0 16 16">
-                    <path fill-rule="evenodd" d="M6 3.5a.5.5 0 0 1 .5-.5h8a.5.5 0 0 1 .5.5v9a.5.5 0 0 1-.5.5h-8a.5.5 0 0 1-.5-.5v-2a.5.5 0 0 0-1 0v2A1.5 1.5 0 0 0 6.5 14h8a1.5 1.5 0 0 0 1.5-1.5v-9A1.5 1.5 0 0 0 14.5 2h-8A1.5 1.5 0 0 0 5 3.5v2a.5.5 0 0 0 1 0v-2z" />
-                    <path fill-rule="evenodd" d="M11.854 8.354a.5.5 0 0 0 0-.708l-3-3a.5.5 0 1 0-.708.708L10.293 7.5H1.5a.5.5 0 0 0 0 1h8.793l-2.147 2.146a.5.5 0 0 0 .708.708l3-3z" />
-                </svg>
-            </button>
+            @if (Context.User.Identity is not null &&
+            Context.User.Identity.IsAuthenticated)
+            {
+                String userId =
+                Context.User.Claims
+                .First(c => c.Type == ClaimTypes.Sid)
+                .Value;
+                String userAvatar = Context.User.Claims.First(c => c.Type == ClaimTypes.UserData).Value;
+                if (String.IsNullOrEmpty(userAvatar)) userAvatar = "no-avatar.png";
+                String userLogin = Context.User.Claims.First(c => c.Type == ClaimTypes.NameIdentifier).Value;
+                <a asp-controller="Home" asp-action="Profile" asp-route-id="@userLogin" class="mx-3" title="Profile" width="16" height="16">
+                    <img src="~/avatars/@(userAvatar)"
+                     alt="Ava"
+                     title="@userLogin"
+                     style="max-width: 40px; max-height: 40px; border-radius: 50%">
+                </a>
+                <a asp-controller="Home" asp-action="Logout" data-user-sid="@userId" class="mx-3" title="Вийти">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16"
+                     fill="currentColor" class="bi bi-box-arrow-right" viewBox="0 0 16 16">
+                        <path fill-rule="evenodd" d="M10 12.5a.5.5 0 0 1-.5.5h-8a.5.5 0 0 1-.5-.5v-9a.5.5 0 0 1 .5-.5h8a.5.5 0 0 1 .5.5v2a.5.5 0 0 0 1 0v-2A1.5 1.5 0 0 0 9.5 2h-8A1.5 1.5 0 0 0 0 3.5v9A1.5 1.5 0 0 0 1.5 14h8a1.5 1.5 0 0 0 1.5-1.5v-2a.5.5 0 0 0-1 0v2z" />
+                        <path fill-rule="evenodd" d="M15.854 8.354a.5.5 0 0 0 0-.708l-3-3a.5.5 0 0 0-.708.708L14.293 7.5H5.5a.5.5 0 0 0 0 1h8.793l-2.147 2.146a.5.5 0 0 0 .708.708l3-3z" />
+                    </svg>
+                </a>
+            }
+            else
+            {
+                <button title="Login" type="button" class="btn btn-outline-primary mx-3" data-bs-toggle="modal" data-bs-target="#exampleModal">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-box-arrow-in-right" viewBox="0 0 16 16">
+                        <path fill-rule="evenodd" d="M6 3.5a.5.5 0 0 1 .5-.5h8a.5.5 0 0 1 .5.5v9a.5.5 0 0 1-.5.5h-8a.5.5 0 0 1-.5-.5v-2a.5.5 0 0 0-1 0v2A1.5 1.5 0 0 0 6.5 14h8a1.5 1.5 0 0 0 1.5-1.5v-9A1.5 1.5 0 0 0 14.5 2h-8A1.5 1.5 0 0 0 5 3.5v2a.5.5 0 0 0 1 0v-2z" />
+                        <path fill-rule="evenodd" d="M11.854 8.354a.5.5 0 0 0 0-.708l-3-3a.5.5 0 1 0-.708.708L10.293 7.5H1.5a.5.5 0 0 0 0 1h8.793l-2.147 2.146a.5.5 0 0 0 .708.708l3-3z" />
+                    </svg>
+                </button>
+            }
         </nav>
     </header>
     <div class="container">
@@ -51,12 +80,17 @@
     <div class="modal fade" id="exampleModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
         <div class="modal-dialog">
             <div class="modal-content">
-                <form asp-controller="User" asp-action="AuthUser" method="post">
+                <form asp-controller="Home" asp-action="AuthUser" method="post">
                     <div class="modal-header">
                         <h5 class="modal-title" id="exampleModalLabel">Authentication</h5>
                         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                     </div>
                     <div class="modal-body">
+                        <label for="user-option">Choose your role</label><br />
+                        <select id="user-option" class="form-control" style="width:300px;">
+                            <option value="student">student</option>
+                            <option value="teacher">teacher</option>
+                        </select>
                         <div class="form-group" style="width: 300px">
                             <label for="user-login">Login</label>
                             <input id="user-login" name="user-login" type="text" class="form-control" placeholder="Input your login/email">
@@ -77,6 +111,50 @@
             </div>
         </div>
     </div>
+    <script>
+        document.addEventListener("DOMContentLoaded", () => {
+            const loginButton = document.getElementById("login-button");
+            if (!loginButton) throw "login-button not found";
+            loginButton.addEventListener("click", loginButtonClick);
+        });
+        function loginButtonClick() {
+
+            const optionInput = document.getElementById("user-option");
+            if (!optionInput) throw "user-option input not found";
+            const option = optionInput.value;
+
+            const loginInput = document.getElementById("user-login");
+            if (!loginInput) throw "user-login input not found";
+            const login = loginInput.value;
+
+            const passwordInput = document.getElementById("user-password");
+            if (!passwordInput) throw "user-password input not found";
+            const password = passwordInput.value;
+
+            const AuthError = document.getElementById("AuthError");
+
+            window.fetch("/Home/AuthUser", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/x-www-form-urlencoded"
+                },
+                body: `user-login=${login}&user-password=${password}&user-option=${option}`
+            })
+                .then(r => r.text())
+                .then(t => {
+                    console.log(t);
+                    if (t === "OK") {
+                        //оновлюємо сторінку для авторизації
+                        window.location.reload();
+                    }
+                    else {
+                        AuthError.innerHTML = "Incorrect Login or Password";
+                    }
+                });
+        }
+
+
+    </script>
     <script src="~/lib/jquery/dist/jquery.min.js"></script>
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
     <script src="~/js/site.js" asp-append-version="true"></script>
