@@ -1,0 +1,28 @@
+﻿@model Testing_System.Models.Test.CreateTestModel
+@{
+    ViewData["Title"] = "Create Test";
+}
+<form class="d-flex justify-content-center mt-3" method="post" asp-controller="Home" asp-action="CreateNewTest" enctype="multipart/form-data">
+    <div class="form-group d-flex justify-content-center flex-column gap-3">
+
+        <div style="width:350px">
+
+            <label for="InputQuestion">Input Test Name</label>
+            <input type="text" asp-for="Name" class="form-control" id="Name" placeholder="Input name">
+
+        </div>
+        <div style="width:350px">
+
+            <label for="InputAnswer">Input Test Description</label>
+            <input type="text" asp-for="Description" class="form-control" id="Description" placeholder="Input description">
+
+        </div>
+        <div style="width:350px">
+
+            <label for="InputAnswer">Input Time to solve the test</label>
+            <input type="text" asp-for="Time" class="form-control" id="Time" placeholder="Input time">
+
+        </div>
+        <button type="submit" class="btn btn-primary" style="width: 200px">Start adding questions</button>
+        </div>
+</form>

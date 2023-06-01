@@ -108,46 +108,11 @@
 </div>
 
 
-<!-- Modal -->
-<div class="modal fade" id="confirmModal" tabindex="-1" aria-labelledby="confirmModalLabel" aria-hidden="true">
-    <div class="modal-dialog">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title" id="confirmModalLabel">Введіть код з Email: </h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-            </div>
-            <div class="modal-body">
-                <div class="input-group mb-3">
-                    <span class="input-group-text" id="confirm-addon">Код</span>
-                    <input id="confirm-email-input" type="text" class="form-control" aria-label="With textarea" placeholder="Код з пошти">
-                </div>
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-warning" id="resend-email-button">Надіслати новий код</button>
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Відміна</button>
-                <button type="button" class="btn btn-primary" id="confirm-email-button">Підтвердити</button>
-            </div>
-        </div>
-    </div>
-</div>
+
 <script>
     document.addEventListener("DOMContentLoaded", () => {
         for (let pencil of document.querySelectorAll("[data-ref-field]")) {
             pencil.addEventListener("click", editClick);
-        }
-        const confirmEmailButton = document.getElementById("confirm-email-button");
-        if (confirmEmailButton) {
-            confirmEmailButton.addEventListener("click", confirmEmailButtonClick);
-        }
-        else {
-            console.error("Element not found: 'confirm-email-button' ")
-        }
-        const resendEmailButton = document.getElementById("resend-email-button");
-        if (resendEmailButton) {
-            resendEmailButton.addEventListener("click", resendEmailButtonClick);
-        }
-        else {
-            console.error("Element not found: 'resend-email-button' ")
         }
     })
     //let editElem;
@@ -219,42 +184,5 @@
             edit.escPressed = true;
             e.target.blur();
         }
-    }
-    function confirmEmailButtonClick() {
-        const confirmEmailInput = document.getElementById("confirm-email-input");
-        if (!confirmEmailInput) throw "Element not found: 'confirm-email-input'";
-        const emailCode = confirmEmailInput.value;
-        if (emailCode.length === 0) {
-            alert("Код не може бути порожним");
-            return;
-        }
-        window.fetch("/User/ConfirmEmail", {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json"
-            },
-            body: JSON.stringify(emailCode)
-        })
-            .then(r => r.json())
-            .then(j => {
-                console.log(j);
-
-                if (j.status == "200") {
-                    window.location.reload();
-                }
-                else {
-                    alert(j.data);
-                }
-            });
-    }
-    function resendEmailButtonClick() {
-        window.fetch("/User/ResendConfirmEmail", {
-            method: "PATCH",
-        })
-            .then(r => r.text())
-            .then(t => {
-                console.log(t);
-            });
-
     }
 </script>

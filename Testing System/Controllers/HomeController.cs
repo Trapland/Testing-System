@@ -1,10 +1,12 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Primitives;
 using System.Diagnostics;
+using System.Drawing;
 using System.Security.Claims;
 using Testing_System.Data;
 using Testing_System.Data.Entity;
 using Testing_System.Models;
+using Testing_System.Models.Test;
 using Testing_System.Models.User;
 using Testing_System.Services.Kdf;
 using Testing_System.Services.Random;
@@ -35,6 +37,99 @@ namespace Testing_System.Controllers
         public IActionResult Index()
         {
             return View();
+        }
+
+        public IActionResult Tests()
+        {
+            return View();
+        }
+
+        public IActionResult CreateTest()
+        {
+            return View();
+        }
+
+        public RedirectToActionResult CreateNewTest(CreateTestModel createTestModel)
+        {
+            Test NewTest = new Test()
+            {
+                Id = Guid.NewGuid(),
+                Description = createTestModel.Description,
+                Name = createTestModel.Name,
+                TeacherId = Guid.Parse(HttpContext.Session.GetString("authUserId")),
+                Count = 0,
+                StartCount = 0,
+                Time = createTestModel.Time
+            };
+            _dataContext.Tests.Add(NewTest);
+            _dataContext.SaveChanges();
+
+            return RedirectToAction(nameof(CreateQuestion), new { id = NewTest.Id });
+        }
+
+        public IActionResult CreateQuestion(CreateQuestionModel createQuestionModel, [FromRoute] String id)
+        {
+            if (!String.IsNullOrEmpty(createQuestionModel.Description))
+            {
+                Dictionary<string, Difficulty> difficultyMap = new Dictionary<string, Difficulty>
+                {
+                    { "Beginner", Difficulty.Beginner },
+                    { "Easy", Difficulty.Easy },
+                    { "Medium", Difficulty.Medium },
+                    { "Hard", Difficulty.Hard },
+                    { "Advanced", Difficulty.Advanced },
+                    { "Deep", Difficulty.Deep }
+                };
+                Question NewQuestion = new Question()
+                {
+                    Id = Guid.NewGuid(),
+                    Description = createQuestionModel.Description,
+                    Difficulty = difficultyMap[$"{createQuestionModel.Difficulty}"],
+                    ImageURL = createQuestionModel.ImageURL,
+                    TestId = Guid.Parse(id)
+                };
+                _dataContext.Questions.Add(NewQuestion);
+                Answer answer = new Answer()
+                {
+                    Id = Guid.NewGuid(),
+                    Description = createQuestionModel.Answer1,
+                    Value = createQuestionModel.ValueAnswer1,
+                    QusetionId = NewQuestion.Id
+                };
+                _dataContext.Answers.Add(answer);
+                answer = new Answer()
+                {
+                    Id = Guid.NewGuid(),
+                    Description = createQuestionModel.Answer2,
+                    Value = createQuestionModel.ValueAnswer2,
+                    QusetionId = NewQuestion.Id
+                };
+                _dataContext.Answers.Add(answer);
+                answer = new Answer()
+                {
+                    Id = Guid.NewGuid(),
+                    Description = createQuestionModel.Answer3,
+                    Value = createQuestionModel.ValueAnswer3,
+                    QusetionId = NewQuestion.Id
+                };
+                _dataContext.Answers.Add(answer);
+                answer = new Answer()
+                {
+                    Id = Guid.NewGuid(),
+                    Description = createQuestionModel.Answer4,
+                    Value = createQuestionModel.ValueAnswer4,
+                    QusetionId = NewQuestion.Id
+                };
+                _dataContext.Answers.Add(answer);
+                _dataContext.SaveChanges();
+                int _counter = createQuestionModel.counter + 1;
+                createQuestionModel = new() { counter = _counter, Description = " "};
+            }
+            else
+            {
+                createQuestionModel.counter = 1;
+            }
+            return View(createQuestionModel);
         }
 
         public IActionResult Privacy()
@@ -236,7 +331,7 @@ namespace Testing_System.Controllers
 
                 }
             }
-            else if( optionValues == "teacher")
+            else if (optionValues == "teacher")
             {
                 Teacher? teacher = _dataContext.Teachers.Where(t => t.Login == login).FirstOrDefault();
                 if (teacher is not null)
@@ -250,7 +345,7 @@ namespace Testing_System.Controllers
                     }
 
                 }
-            }    
+            }
             return "Авторизацію відхилено";
         }
 
@@ -264,7 +359,7 @@ namespace Testing_System.Controllers
         {
             _logger.LogInformation(id);
             String? userStatus = HttpContext.Session.GetString("userStatus");
-            if(userStatus == "student")
+            if (userStatus == "student")
             {
                 Student? user = _dataContext.Students.FirstOrDefault(u => u.Login == id);
                 if (user is not null)
@@ -283,7 +378,7 @@ namespace Testing_System.Controllers
                     return NotFound();
                 }
             }
-            else if(userStatus == "teacher")
+            else if (userStatus == "teacher")
             {
                 Teacher? user = _dataContext.Teachers.FirstOrDefault(u => u.Login == id);
                 if (user is not null)
@@ -301,7 +396,7 @@ namespace Testing_System.Controllers
                 {
                     return NotFound();
                 }
-            }    
+            }
             else
             {
                 return NotFound();
