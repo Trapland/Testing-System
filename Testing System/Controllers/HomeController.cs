@@ -118,6 +118,8 @@ namespace Testing_System.Controllers
             test.StartCount = createTestModel.StartCount;
             test.IsCompleted = true;
             _dataContext.SaveChanges();
+            HttpContext.Session.Remove("quesCount");
+            HttpContext.Session.Remove("testId");
             return RedirectToAction(nameof(Tests));
         }
 
