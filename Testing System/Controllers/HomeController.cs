@@ -106,8 +106,8 @@ namespace Testing_System.Controllers
 
         public ActionResult FinishTest(CreateTestModel createTestModel)
         {
-            ViewData["CounterQuestions"] = HttpContext.Session.GetInt32("quesCount");
-
+            HttpContext.Session.SetInt32("quesCount", HttpContext.Session.GetInt32("quesCount").Value - 1);
+            ViewData["CounterQuestions"] = HttpContext.Session.GetInt32("quesCount").Value;
             return View();
         }
         public IActionResult Finish(CreateTestModel createTestModel)
