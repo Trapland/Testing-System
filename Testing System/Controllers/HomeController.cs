@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Primitives;
 using System.Diagnostics;
 using System.Drawing;
@@ -12,6 +13,7 @@ using Testing_System.Services.Kdf;
 using Testing_System.Services.Random;
 using Testing_System.Services.RandomImg;
 using Testing_System.Services.Validation;
+using static System.Collections.Specialized.BitVector32;
 
 namespace Testing_System.Controllers
 {
@@ -36,12 +38,41 @@ namespace Testing_System.Controllers
 
         public IActionResult Index()
         {
-            return View();
+            TestsPageViewModel model = new()
+            {
+                Tests = _dataContext.Tests
+                .Where(t => t.IsCompleted)
+                .AsEnumerable()
+                .Select(t => new TestViewModel()
+                {
+                    Name = t.Name,
+                    Id = t.Id,
+                    Description = t.Description,
+                    Count = t.StartCount
+                })
+                .ToList()
+            };
+            return View(model);
         }
 
         public IActionResult Tests()
         {
-            return View();
+            TestsPageViewModel model = new()
+            {
+                userStatus = HttpContext.Session.GetString("userStatus"),
+                Tests = _dataContext.Tests
+                .Where(t => t.IsCompleted)
+                .AsEnumerable()
+                .Select(t => new TestViewModel()
+                {
+                    Name = t.Name,
+                    Id= t.Id,
+                    Description = t.Description,
+                    Count = t.StartCount
+                })
+                .ToList()
+            };
+            return View(model);
         }
 
         public IActionResult CreateTest()
@@ -63,13 +94,36 @@ namespace Testing_System.Controllers
             };
             _dataContext.Tests.Add(NewTest);
             _dataContext.SaveChanges();
-
-            return RedirectToAction(nameof(CreateQuestion), new { id = NewTest.Id });
+            HttpContext.Session.SetString("testId", NewTest.Id.ToString());
+            HttpContext.Session.SetInt32("quesCount", 1);
+            return RedirectToAction(nameof(CreateQuestion));
+        }
+        public ActionResult CreateQuestion() 
+        {
+            ViewData["CounterQuestions"] = HttpContext.Session.GetInt32("quesCount");
+            return View();
         }
 
-        public IActionResult CreateQuestion(CreateQuestionModel createQuestionModel, [FromRoute] String id)
+        public ActionResult FinishTest(CreateTestModel createTestModel)
         {
-            if (!String.IsNullOrEmpty(createQuestionModel.Description))
+            ViewData["CounterQuestions"] = HttpContext.Session.GetInt32("quesCount");
+
+            return View();
+        }
+        public IActionResult Finish(CreateTestModel createTestModel)
+        {
+            Guid testId = Guid.Parse(HttpContext.Session.GetString("testId"));
+            Test test = _dataContext.Tests.FirstOrDefault(t => t.Id == testId);
+            test.Count = HttpContext.Session.GetInt32("quesCount").Value;
+            test.StartCount = createTestModel.StartCount;
+            test.IsCompleted = true;
+            _dataContext.SaveChanges();
+            return RedirectToAction(nameof(Tests));
+        }
+
+        public IActionResult AddQuestion(CreateQuestionModel addQuestionModel)
+        {
+            if (!String.IsNullOrEmpty(addQuestionModel.Description))
             {
                 Dictionary<string, Difficulty> difficultyMap = new Dictionary<string, Difficulty>
                 {
@@ -83,53 +137,55 @@ namespace Testing_System.Controllers
                 Question NewQuestion = new Question()
                 {
                     Id = Guid.NewGuid(),
-                    Description = createQuestionModel.Description,
-                    Difficulty = difficultyMap[$"{createQuestionModel.Difficulty}"],
-                    ImageURL = createQuestionModel.ImageURL,
-                    TestId = Guid.Parse(id)
-                };
+                    Description = addQuestionModel.Description,
+                    Difficulty = difficultyMap[$"{addQuestionModel.Difficulty}"],
+                    ImageURL = addQuestionModel.ImageURL,
+                    TestId = Guid.Parse(HttpContext.Session.GetString("testId"))
+            };
                 _dataContext.Questions.Add(NewQuestion);
                 Answer answer = new Answer()
                 {
                     Id = Guid.NewGuid(),
-                    Description = createQuestionModel.Answer1,
-                    Value = createQuestionModel.ValueAnswer1,
+                    Description = addQuestionModel.Answer1,
+                    Value = addQuestionModel.ValueAnswer1,
                     QusetionId = NewQuestion.Id
                 };
                 _dataContext.Answers.Add(answer);
                 answer = new Answer()
                 {
                     Id = Guid.NewGuid(),
-                    Description = createQuestionModel.Answer2,
-                    Value = createQuestionModel.ValueAnswer2,
+                    Description = addQuestionModel.Answer2,
+                    Value = addQuestionModel.ValueAnswer2,
                     QusetionId = NewQuestion.Id
                 };
                 _dataContext.Answers.Add(answer);
                 answer = new Answer()
                 {
                     Id = Guid.NewGuid(),
-                    Description = createQuestionModel.Answer3,
-                    Value = createQuestionModel.ValueAnswer3,
+                    Description = addQuestionModel.Answer3,
+                    Value = addQuestionModel.ValueAnswer3,
                     QusetionId = NewQuestion.Id
                 };
                 _dataContext.Answers.Add(answer);
                 answer = new Answer()
                 {
                     Id = Guid.NewGuid(),
-                    Description = createQuestionModel.Answer4,
-                    Value = createQuestionModel.ValueAnswer4,
+                    Description = addQuestionModel.Answer4,
+                    Value = addQuestionModel.ValueAnswer4,
                     QusetionId = NewQuestion.Id
                 };
                 _dataContext.Answers.Add(answer);
                 _dataContext.SaveChanges();
-                int _counter = createQuestionModel.counter + 1;
-                createQuestionModel = new() { counter = _counter, Description = " "};
+                HttpContext.Session.SetInt32("quesCount", HttpContext.Session.GetInt32("quesCount").Value + 1);
+                return RedirectToAction(nameof(CreateQuestion));
+
             }
             else
             {
-                createQuestionModel.counter = 1;
+                addQuestionModel.counter = 1;
             }
-            return View(createQuestionModel);
+            return View("CreateQuestion");
+
         }
 
         public IActionResult Privacy()

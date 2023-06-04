@@ -1,5 +1,18 @@
-﻿@{
+﻿@model Testing_System.Models.Test.TestsPageViewModel
+@{
     ViewData["Title"] = "Tests";
 }
 
-<a class="btn btn-primary" asp-controller="Home" asp-action="CreateTest" style="width: 200px">Create New Test</a>
+<div class="container">
+    <div class="row">
+
+        @foreach (var Test in Model.Tests)
+        {
+            @Html.DisplayFor(m => Test, "Test")
+        }
+    </div>
+</div>
+@if (Model.userStatus == "teacher")
+{
+    <a class="btn btn-primary" asp-controller="Home" asp-action="CreateTest" style="width: 200px">Create New Test</a>
+}

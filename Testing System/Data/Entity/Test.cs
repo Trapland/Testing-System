@@ -15,5 +15,7 @@
         public TimeSpan Time { get; set; }
 
         public int StartCount { get; set; } 
+
+        public bool IsCompleted { get; set; } = false;
     }
 }

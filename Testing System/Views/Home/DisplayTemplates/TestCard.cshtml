@@ -1,9 +1,10 @@
-﻿
+﻿@model Testing_System.Models.Test.TestViewModel
+
 <div class="col-md-6">
     <div class="card mb-4">
         <div class="card-body">
-            <h5 class="card-title">Test</h5>
-            <p class="card-text">Description</p>
+            <h5 class="card-title">@Model.Name</h5>
+            <p class="card-text">@Model.Description</p>
             <a href="test1.html" class="btn btn-primary">Start</a>
         </div>
     </div>

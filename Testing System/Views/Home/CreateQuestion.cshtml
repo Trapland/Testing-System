@@ -3,8 +3,8 @@
     ViewData["Title"] = "Create Question";
 }
 
-<div class="text-center"> Question @Model.counter</div>
-<form class="d-flex justify-content-center mt-3" method="post" asp-controller="Home" asp-action="CreateQuestion" enctype="multipart/form-data">
+<div class="text-center"> Question @ViewData["CounterQuestions"]</div>
+<form class="d-flex justify-content-center mt-3" method="post" asp-controller="Home" asp-action="AddQuestion" enctype="multipart/form-data">
     <div class="form-group d-flex justify-content-center flex-column gap-3">
 
         <div style="width:350px">
@@ -13,44 +13,50 @@
             <input type="text" asp-for="Description" class="form-control" id="InputQuestion" placeholder="Input question">
 
         </div>
-                    <div>
-                <label for="option">Choose difficulty</label><br />
-                <select asp-for="Difficulty" class="form-control" style="width:350px;">
+        <div>
+            <label for="option">Choose difficulty</label><br />
+            <select asp-for="Difficulty" class="form-control" style="width:350px;">
                 <option value="Beginner">Beginner</option>
                 <option value="Easy">Easy</option>
                 <option value="Medium">Medium</option>
                 <option value="Hard">Hard</option>
                 <option value="Advanced">Advanced</option>
                 <option value="Deep">Deep</option>
-                </select>
-            </div>
+            </select>
+        </div>
         <div style="width:350px">
 
-            <label for="InputAnswer">Input Answer</label>
-                        <input type="text" asp-for="Answer1" class="form-control" id="InputAnswer" placeholder="Input answer">
+            <label for="InputAnswer">Input Answer 1</label>
+            <input type="text" asp-for="Answer1" class="form-control" id="InputAnswer" placeholder="Input answer">
             <input type="text" asp-for="ValueAnswer1" class="form-control" id="InputValue" placeholder="Input value">
 
         </div>
         <div style="width:350px">
 
-            <label for="InputAnswer">Input Answer</label>
+            <label for="InputAnswer">Input Answer 2</label>
             <input type="text" asp-for="Answer2" class="form-control" id="InputAnswer" placeholder="Input answer">
             <input type="text" asp-for="ValueAnswer2" class="form-control" id="InputValue" placeholder="Input value">
         </div>
         <div style="width:350px">
 
-            <label for="InputAnswer">Input Answer</label>
+            <label for="InputAnswer">Input Answer 3</label>
             <input type="text" asp-for="Answer3" class="form-control" id="InputAnswer" placeholder="Input answer">
             <input type="text" asp-for="ValueAnswer3" class="form-control" id="InputValue" placeholder="Input value">
 
         </div>
         <div style="width:350px">
 
-            <label for="InputAnswer">Input Answer</label>
+            <label for="InputAnswer">Input Answer 4</label>
             <input type="text" asp-for="Answer4" class="form-control" id="InputAnswer" placeholder="Input answer">
             <input type="text" asp-for="ValueAnswer4" class="form-control" id="InputValue" placeholder="Input value">
         </div>
-        <button type="submit" class="btn btn-primary" style="width: 200px">Add</button>
+        <div class="d-flex justify-content-center" style="width:350px">
+            <button type="submit" class="btn btn-primary" style="width: 200px">Add</button>
+
+        </div>
 
     </div>
+</form>
+<form asp-controller="Home" asp-action="FinishTest" class="d-flex justify-content-center">
+    <button type="submit" class="btn btn-success" style="width: 200px">Enter last question and finish test</button>
 </form>
