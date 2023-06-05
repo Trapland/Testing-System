@@ -7,5 +7,8 @@
 
         public String Description { get; set; } = null!;
 
+        public bool isMarked { get; set; } = false;
+
+
     }
 }

@@ -110,6 +110,7 @@ namespace Testing_System.Controllers
             ViewData["CounterQuestions"] = HttpContext.Session.GetInt32("quesCount").Value;
             return View();
         }
+
         public IActionResult Finish(CreateTestModel createTestModel)
         {
             Guid testId = Guid.Parse(HttpContext.Session.GetString("testId"));
@@ -198,6 +199,56 @@ namespace Testing_System.Controllers
         public IActionResult Registration()
         {
             return View();
+        }
+
+        public IActionResult StartTestPage([FromRoute] String id) 
+        {
+            HttpContext.Session.SetString("Testid", id);
+            return View();
+        }
+
+        public IActionResult Test()
+        {
+            if(HttpContext.Session.GetString("Testid") == null)
+            {
+                return View("Index");
+            }
+            Guid TestId = Guid.Parse(HttpContext.Session.GetString("Testid"));
+            Test test = _dataContext.Tests.FirstOrDefault(t => t.Id == TestId);
+
+            TestModel model = new()
+            {
+                Id = TestId.ToString(),
+                TeacherId = test.TeacherId.ToString(),
+                StudentId = _dataContext.Students.FirstOrDefault(s => s.Id.ToString() == HttpContext.Session.GetString("authUserId")).Id.ToString(),
+                Count = test.Count,
+                StartCount = test.StartCount,
+                Questions = _dataContext.Questions
+                .Where(q => q.TestId == TestId)
+                .AsEnumerable()
+                .Select(q => new QuestionModel()
+                {
+                    Description = q.Description,
+                    Id = q.Id.ToString(),
+                }).ToList()
+            };
+
+            for (int i = 0; i < model.Questions.Count; i++) // по нормальному одним запитом не працює із-за ассінхронності
+            {
+                model.Questions[i].Answers = _dataContext.Answers
+                    .Where(a => a.QusetionId.ToString() == model.Questions[i].Id)
+                    .AsEnumerable()
+                    .Select(a => new AnswerModel()
+                    {
+                        Value = a.Value,
+                        Description = a.Description
+                    })
+                    .ToList();
+                RandomSort(model.Questions[i].Answers);
+            }
+            RandomSort(model.Questions);
+
+            return View(model);
         }
 
 
@@ -466,6 +517,21 @@ namespace Testing_System.Controllers
         public IActionResult Error()
         {
             return View(new ErrorViewModel { RequestId = Activity.Current?.Id ?? HttpContext.TraceIdentifier });
+        }
+
+        public static void RandomSort<T>(List<T> list)
+        {
+            Random random = new Random();
+            int n = list.Count;
+
+            while (n > 1)
+            {
+                n--;
+                int k = random.Next(n + 1);
+                T value = list[k];
+                list[k] = list[n];
+                list[n] = value;
+            }
         }
     }
 }

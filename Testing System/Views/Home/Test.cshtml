@@ -1,5 +1,13 @@
-﻿@*
-    For more information on enabling MVC for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
-*@
-@{
+﻿@model Testing_System.Models.Test.TestModel
+
+@foreach (var item in Model.Questions)
+{
+    <h3>@item.Description</h3>
+    <ul>
+        <li>@item.Answers[0].Description</li>
+        <li>@item.Answers[1].Description</li>
+        <li>@item.Answers[2].Description</li>
+        <li>@item.Answers[3].Description</li>
+    </ul>
 }
+
