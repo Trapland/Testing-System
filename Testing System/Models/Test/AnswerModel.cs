@@ -2,6 +2,7 @@
 {
     public class AnswerModel
     {
+        public String Id { get; set; } = null!;
 
         public int Value { get; set; }
 

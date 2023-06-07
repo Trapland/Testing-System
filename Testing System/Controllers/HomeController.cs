@@ -241,16 +241,70 @@ namespace Testing_System.Controllers
                     .Select(a => new AnswerModel()
                     {
                         Value = a.Value,
-                        Description = a.Description
+                        Description = a.Description,
+                        Id = a.Id.ToString(),
                     })
                     .ToList();
                 RandomSort(model.Questions[i].Answers);
             }
             RandomSort(model.Questions);
-
+            int sum = 0;
+            for (int i = 0; i < model.Questions.Count; i++)
+            {
+                int value = 0;
+                for (int j = 0; j < model.Questions[i].Answers.Count; j++)
+                {
+                    if (value < model.Questions[i].Answers[j].Value)
+                        value = model.Questions[i].Answers[j].Value;
+                }
+                sum += value;
+            }
+            HttpContext.Session.SetInt32("Total", sum);
             return View(model);
         }
 
+        [HttpPost]
+        public ActionResult SaveAnswers(TestModel testModel)
+        {
+            Guid sessionId = Guid.NewGuid();
+            List<AnswerViewModel> answers = testModel.Answers;
+            for (int i = 0; i < answers.Count; i++)
+            {
+                History history = new()
+                {
+                    Id = Guid.NewGuid(),
+                    SessionId = sessionId,
+                    TestId = Guid.Parse(HttpContext.Session.GetString("Testid")),
+                    StudentId = Guid.Parse(HttpContext.Session.GetString("authUserId")),
+                    AnswerId = Guid.Parse(answers[i].AnswerId),
+                    QuestionId = Guid.Parse(answers[i].QuestionId),
+                    Marked = true
+                };
+                _dataContext.History.Add(history);
+            }
+            _dataContext.SaveChanges();
+            HttpContext.Session.SetString("SessionId",sessionId.ToString());
+            return RedirectToAction("Result");
+        }
+
+        public IActionResult Result()
+        {
+            Guid sessionId = Guid.Parse(HttpContext.Session.GetString("SessionId"));
+            List<History> histories = _dataContext.History.Where(h => h.SessionId == sessionId).ToList();
+            int sum = 0;
+
+            for (int i = 0; i < histories.Count; i++)
+            {
+                Answer answer = _dataContext.Answers.FirstOrDefault(a => a.Id == histories[i].AnswerId);
+                sum += answer.Value;
+            }
+            ViewData["result"] = $"You have gain {sum} of {HttpContext.Session.GetInt32("Total")}, Congratulations!";
+
+            HttpContext.Session.Remove("Total");
+            HttpContext.Session.Remove("SessionId");
+            HttpContext.Session.Remove("Testid");
+            return View();
+        }
 
         public ActionResult Register(Registration registrationModel)
         {

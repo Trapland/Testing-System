@@ -4,6 +4,8 @@
     {
         public Guid Id { get; set; }
 
+        public Guid SessionId { get; set; }
+
         public Guid TestId { get; set; }
 
         public Guid QuestionId { get; set; }

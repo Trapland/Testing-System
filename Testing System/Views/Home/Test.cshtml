@@ -1,13 +1,29 @@
 ﻿@model Testing_System.Models.Test.TestModel
 
-@foreach (var item in Model.Questions)
+@using (Html.BeginForm("SaveAnswers", "Home", FormMethod.Post))
 {
-    <h3>@item.Description</h3>
-    <ul>
-        <li>@item.Answers[0].Description</li>
-        <li>@item.Answers[1].Description</li>
-        <li>@item.Answers[2].Description</li>
-        <li>@item.Answers[3].Description</li>
-    </ul>
-}
+    @for (int i = 0; i < Model.Questions.Count; i++)
+    {
+        <h4>@Model.Questions[i].Description</h4>
+        <div>
+            <input type="radio" name="Answers[@i].AnswerId" value="@Model.Questions[i].Answers[0].Id" />
+            @Model.Questions[i].Answers[0].Description
+        </div>
+        <div>
+            <input type="radio" name="Answers[@i].AnswerId" value="@Model.Questions[i].Answers[1].Id" />
+            @Model.Questions[i].Answers[1].Description
+        </div>
+        <div>
+            <input type="radio" name="Answers[@i].AnswerId" value="@Model.Questions[i].Answers[2].Id" />
+            @Model.Questions[i].Answers[2].Description
+        </div>
+        <div>
+            <input type="radio" name="Answers[@i].AnswerId" value="@Model.Questions[i].Answers[3].Id" />
+            @Model.Questions[i].Answers[3].Description
+        </div>
+        <input type="hidden" name="Answers[@i].QuestionId" value="@Model.Questions[i].Id">
+        <br />
+    }
 
+    <button class="btn btn-success" type="submit">Finish test</button>
+}
