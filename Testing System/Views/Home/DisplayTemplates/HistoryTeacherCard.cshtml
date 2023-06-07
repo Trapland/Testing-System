@@ -1,0 +1,13 @@
+﻿@model Testing_System.Models.Test.TestHistoryViewModel
+
+<div class="col-md-6">
+    <div class="card mb-4">
+        <div class="card-body">
+            <h5 class="card-title">@Model.Name</h5>
+            <p class="card-text">@Model.Description</p>
+            <p class="card-text">@Model.student.Name   @Model.student.Surname</p>
+            <p class="card-text">Session: @Model.SessionId</p>
+            <a class="ms-auto" asp-controller="Home" asp-action="ViewHistoryTestPage" asp-route-id="@Model.SessionId">View Answers</a>
+        </div>
+    </div>
+</div>

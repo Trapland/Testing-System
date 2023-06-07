@@ -8,7 +8,10 @@
 
         public String Description { get; set; } = null!;
 
+        public bool isMax { get; set; } = false;
+
         public bool isMarked { get; set; } = false;
+
 
 
     }

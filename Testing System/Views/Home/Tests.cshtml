@@ -3,16 +3,37 @@
     ViewData["Title"] = "Tests";
 }
 
-<div class="container">
-    <div class="row">
-
-        @foreach (var Test in Model.Tests)
-        {
-            @Html.DisplayFor(m => Test, "TestCard")
-        }
-    </div>
-</div>
 @if (Model.userStatus == "teacher")
 {
+    <div class="container">
+        <div class="row">
+
+            @foreach (var Test in Model.Tests)
+            {
+                @Html.DisplayFor(m => Test, "TestCardTeacher")
+            }
+        </div>
+    </div>
+
     <a class="btn btn-primary" asp-controller="Home" asp-action="CreateTest" style="width: 200px">Create New Test</a>
+}
+else if (Model.userStatus == "student")
+{
+    <div class="container">
+        <div class="row">
+
+            @foreach (var Test in Model.Tests)
+            {
+                @Html.DisplayFor(m => Test, "TestCard")
+            }
+        </div>
+    </div>
+}
+else
+{
+    <div class="container">
+        <div class="row">
+            <div>You need to authorize before you can view tests</div>
+        </div>
+    </div>
 }

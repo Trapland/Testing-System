@@ -7,5 +7,8 @@
         public String AnswerId { get; set; } = null!;
 
         public int SelectedOptionIndex { get; set; }
+
+        public bool isMax { get; set; } = false;
+
     }
 }

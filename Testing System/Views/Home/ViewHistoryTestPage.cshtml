@@ -1,0 +1,26 @@
+﻿@model Testing_System.Models.Test.TestModel
+
+@for (int i = 0; i < Model.Questions.Count; i++)
+{
+    <h4>@Model.Questions[i].Description</h4>
+    <ul>
+        @for (int j = 0; j < Model.Questions[i].Answers.Count; j++)
+        {
+            <li>
+                <span class="@(
+                @Model.Questions[i].Answers[j].isMarked == true
+                ? "yellow"
+               : "" )">
+                @Model.Questions[i].Answers[j].Description
+                        </span>
+                @if (@Model.Questions[i].Answers[j].isMax == true)
+                {
+                    <p class="green">Сorrect Answer!</p>
+                }
+            </li>
+        }
+    </ul>
+
+}
+
+<a asp-controller="Home" asp-action="History" class="btn btn-success" type="submit">Back to history</a>

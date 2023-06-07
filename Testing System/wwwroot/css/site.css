@@ -19,3 +19,13 @@ body {
     height: 100vh;
     width: 100vw;
 }
+
+.green{
+    color:darkgreen;
+    font-weight: bold;
+}
+
+.yellow {
+    color: yellowgreen;
+    font-weight: bold;
+}

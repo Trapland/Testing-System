@@ -1,0 +1,11 @@
+﻿@model Testing_System.Models.Test.TestViewModel
+
+<div class="col-md-6">
+    <div class="card mb-4">
+        <div class="card-body">
+            <h5 class="card-title">@Model.Name</h5>
+            <p class="card-text">@Model.Description</p>
+            <a class="ms-auto" asp-controller="Home" asp-action="ViewTestPage" asp-route-id="@Model.Id">View Answers</a>
+        </div>
+    </div>
+</div>

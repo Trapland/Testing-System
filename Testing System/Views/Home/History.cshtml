@@ -1,0 +1,13 @@
+﻿@model Testing_System.Models.Test.HistoryViewModel
+@{
+    ViewData["Title"] = "History";
+}
+<div class="container">
+    <div class="row">
+
+        @foreach (var Test in Model.Tests)
+        {
+            @Html.DisplayFor(m => Test, "HistoryTeacherCard")
+        }
+    </div>
+</div>

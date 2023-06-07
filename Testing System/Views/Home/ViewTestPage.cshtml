@@ -1,0 +1,21 @@
+﻿@model Testing_System.Models.Test.TestModel
+
+
+@for (int i = 0; i < Model.Questions.Count; i++)
+{
+    <h4>@Model.Questions[i].Description</h4>
+    <ul>
+        @for (int j = 0; j < Model.Questions[i].Answers.Count; j++)
+        {
+            <li>
+                @Model.Questions[i].Answers[j].Description
+                <p class="@(
+                @Model.Questions[i].Answers[j].isMax == true
+                ? "green"
+               : "" )">Value: @Model.Questions[i].Answers[j].Value</p>
+            </li>
+        }
+    </ul>
+}
+
+<a asp-controller="Home" asp-action="Tests" class="btn btn-success" type="submit">Back to tests</a>

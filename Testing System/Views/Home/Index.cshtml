@@ -6,13 +6,20 @@
     <h1>Tester</h1>
     <p>Welcome! Let`s complete some tests</p>
 </header>
-
-<main class="container py-5">
-    <div class="row">
-
-        @foreach (var Test in Model.Tests)
-        {
-            @Html.DisplayFor(m => Test, "TestCard")
-        }
-    </div>
-</main>
+@if (Context.User.Identity is not null &&
+        Context.User.Identity.IsAuthenticated)
+{
+    <main class="container py-5">
+        <div class="row d-flex justify-content-center">
+            <a style="width:300px" class="btn btn-success" asp-controller="Home" asp-action="Tests">View Tests</a>
+        </div>
+    </main>
+}
+else
+{
+    <main class="container py-5">
+        <div class="row d-flex justify-content-center">
+            <div>You need to authorize before having access to tests</div>
+        </div>
+    </main>
+}

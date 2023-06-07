@@ -13,7 +13,6 @@ using Testing_System.Services.Kdf;
 using Testing_System.Services.Random;
 using Testing_System.Services.RandomImg;
 using Testing_System.Services.Validation;
-using static System.Collections.Specialized.BitVector32;
 
 namespace Testing_System.Controllers
 {
@@ -205,6 +204,124 @@ namespace Testing_System.Controllers
         {
             HttpContext.Session.SetString("Testid", id);
             return View();
+        }
+
+        public IActionResult ViewTestPage([FromRoute] String id)
+        {
+            Guid TestId = Guid.Parse(id);
+            Test test = _dataContext.Tests.FirstOrDefault(t => t.Id == TestId);
+
+            TestModel model = new()
+            {
+                Id = TestId.ToString(),
+                TeacherId = test.TeacherId.ToString(),
+                Count = test.Count,
+                StartCount = test.StartCount,
+                Questions = _dataContext.Questions
+                .Where(q => q.TestId == TestId)
+                .AsEnumerable()
+                .Select(q => new QuestionModel()
+                {
+                    Description = q.Description,
+                    Id = q.Id.ToString(),
+                }).ToList()
+            };
+
+            for (int i = 0; i < model.Questions.Count; i++) // по нормальному одним запитом не працює із-за ассінхронності
+            {
+                model.Questions[i].Answers = _dataContext.Answers
+                    .Where(a => a.QusetionId.ToString() == model.Questions[i].Id)
+                    .AsEnumerable()
+                    .Select(a => new AnswerModel()
+                    {
+                        Value = a.Value,
+                        Description = a.Description,
+                        Id = a.Id.ToString(),
+                    })
+                    .ToList();
+            }
+            for (int i = 0; i < model.Questions.Count; i++)
+            {
+                int value = 0;
+                for (int j = 0; j < model.Questions[i].Answers.Count; j++)
+                {
+                    if (value < model.Questions[i].Answers[j].Value)
+                        value = model.Questions[i].Answers[j].Value;
+                }
+                for (int j = 0; j < model.Questions[i].Answers.Count; j++)
+                {
+                    if (value == model.Questions[i].Answers[j].Value)
+                        model.Questions[i].Answers[j].isMax = true;
+                }
+            }
+            return View(model);
+        }
+
+        public IActionResult ViewHistoryTestPage([FromRoute] String id)
+        {
+            Guid SessionId = Guid.Parse(id);
+            List<History> history = _dataContext.History.Where(h => h.SessionId == SessionId).ToList(); 
+            Test test = _dataContext.Tests.FirstOrDefault(t => t.Id == history[0].TestId);
+
+            TestModel model = new()
+            {
+                Id = test.Id.ToString(),
+                TeacherId = test.TeacherId.ToString(),
+                Count = test.Count,
+                StartCount = test.StartCount,
+                Questions = _dataContext.Questions
+                .Where(q => q.TestId == test.Id)
+                .AsEnumerable()
+                .Select(q => new QuestionModel()
+                {
+                    Description = q.Description,
+                    Id = q.Id.ToString(),
+                }).ToList()
+            };
+
+            for (int i = 0; i < model.Questions.Count; i++) // по нормальному одним запитом не працює із-за ассінхронності
+            {
+                model.Questions[i].Answers = _dataContext.Answers
+                    .Where(a => a.QusetionId.ToString() == model.Questions[i].Id)
+                    .AsEnumerable()
+                    .Select(a => new AnswerModel()
+                    {
+                        Value = a.Value,
+                        Description = a.Description,
+                        Id = a.Id.ToString(),
+                    })
+                    .ToList();
+            }
+            for (int i = 0; i < model.Questions.Count; i++)
+            {
+                int value = 0;
+                for (int j = 0; j < model.Questions[i].Answers.Count; j++)
+                {
+                    if (value < model.Questions[i].Answers[j].Value)
+                        value = model.Questions[i].Answers[j].Value;
+                }
+                for (int j = 0; j < model.Questions[i].Answers.Count; j++)
+                {
+                    if (value == model.Questions[i].Answers[j].Value)
+                        model.Questions[i].Answers[j].isMax = true;
+                }
+            }
+            for (int i = 0; i < model.Questions.Count; i++)
+            {
+                for (int j = 0; j < model.Questions[i].Answers.Count; j++)
+                {
+                    for (int k = 0; k < history.Count; k++)
+                    {
+                        if (model.Questions[i].Answers[j].Id == history[k].AnswerId.ToString())
+                        {
+                            model.Questions[i].Answers[j].isMarked = true;
+                            break;
+                        }
+                    }
+
+                }
+            }
+            return View(model);
         }
 
         public IActionResult Test()
@@ -565,6 +682,56 @@ namespace Testing_System.Controllers
                 return NotFound();
             }
 
+        }
+
+        public IActionResult History(HistoryViewModel historyViewModel)
+        {
+            historyViewModel.userStatus = HttpContext.Session.GetString("userStatus");
+            if(historyViewModel.userStatus == "teacher")
+            {
+                Guid teacherId = Guid.Parse(HttpContext.Session.GetString("authUserId"));
+                List<Test> tests = _dataContext.Tests.Where(t => t.TeacherId == teacherId).ToList();
+                List<Guid> sessionIds = new();
+                for (int i = 0; i < tests.Count; i++)
+                {
+                   sessionIds.AddRange(_dataContext.History.Where(t => t.TestId == tests[i].Id).Select(t => t.SessionId).Distinct().ToList());
+                }
+                List<History> history = new ();
+                for (int i = 0; i < sessionIds.Count; i++)
+                {
+                    history.Add(_dataContext.History.FirstOrDefault(h => h.SessionId == sessionIds[i]));
+                }
+                List<Student> students = new();
+
+                List<Test> students_tests = new();
+
+
+                for (int i = 0; i < history.Count; i++)
+                {
+                    students.Add(_dataContext.Students.FirstOrDefault(s => s.Id == history[i].StudentId));
+
+                    students_tests.Add(_dataContext.Tests.FirstOrDefault(t => t.Id == history[i].TestId));
+                }
+                historyViewModel.Tests = new();
+                for (int i = 0; i < students.Count; i++)
+                {
+                    historyViewModel.Tests.Add(new TestHistoryViewModel()
+                    {
+                        Name= students_tests[i].Name,
+                        Description = students_tests[i].Description,
+                        SessionId = sessionIds[i].ToString(),
+                        student = new() { 
+                        Name = students[i].Name,
+                        Surname = students[i].Surname,
+                        Id = students[i].Id.ToString(),
+                        }
+
+                    });
+                }
+
+            }
+
+            return View(historyViewModel);
         }
 
         [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]

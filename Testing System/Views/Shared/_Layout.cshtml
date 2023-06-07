@@ -25,9 +25,13 @@
                         <li class="nav-item">
                             <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="Tests">Tests</a>
                         </li>
-@*                        <li class="nav-item">
-                            <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="Privacy">Privacy</a>
-                        </li>*@
+                        @if (Context.User.Identity is not null &&
+                        Context.User.Identity.IsAuthenticated)
+                        {
+                            <li class="nav-item">
+                                <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="History">History</a>
+                            </li>
+                        }
                     </ul>
                 </div>
             </div>
@@ -45,7 +49,7 @@
                     <img src="~/avatars/@(userAvatar)"
                      alt="Ava"
                      title="@userLogin"
-                     style="max-width: 40px; max-height: 40px; border-radius: 50%">
+                     style="width: 30px; height: 30px; background-size: 100% 100%; border-radius: 50%">
                 </a>
                 <a asp-controller="Home" asp-action="Logout" data-user-sid="@userId" class="mx-3" title="Вийти">
                     <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16"
@@ -72,10 +76,10 @@
         </main>
     </div>
 
-@*    <footer class="border-top footer text-muted">
-        <div class="container">
-            &copy; 2023 - Testing_System - <a asp-area="" asp-controller="Home" asp-action="Privacy">Privacy</a>
-        </div>
+    @*    <footer class="border-top footer text-muted">
+    <div class="container">
+    &copy; 2023 - Testing_System - <a asp-area="" asp-controller="Home" asp-action="Privacy">Privacy</a>
+    </div>
     </footer>*@
     <div class="modal fade" id="exampleModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
         <div class="modal-dialog">
