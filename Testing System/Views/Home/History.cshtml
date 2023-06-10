@@ -2,6 +2,8 @@
 @{
     ViewData["Title"] = "History";
 }
+@if(Model.userStatus == "teacher")
+{
 <div class="container">
     <div class="row">
 
@@ -11,3 +13,16 @@
         }
     </div>
 </div>
+}
+else if(Model.userStatus == "student")
+{
+    <div class="container">
+        <div class="row">
+
+            @foreach (var Test in Model.Tests)
+            {
+                @Html.DisplayFor(m => Test, "HistoryStudentCard")
+            }
+        </div>
+    </div>
+}

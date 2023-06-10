@@ -1,0 +1,12 @@
+﻿@model Testing_System.Models.Test.TestViewModel
+
+<div class="col-md-6">
+    <div class="card mb-4">
+        <div class="card-body">
+            <h5 class="card-title">@Model.Name</h5>
+            <p class="card-text">@Model.Description</p>
+            <a class="btn btn-warning" asp-controller="Home" asp-action="ViewEditPage" asp-route-id="@Model.Id">Edit</a>
+            <button id="delete" class="btn btn-danger" asp-controller="Home" asp-action="DeleteTest" data="@Model.Id" data-bs-toggle="modal" data-bs-target="#exampleModal">Delete</button>
+        </div>
+    </div>
+</div>

@@ -17,5 +17,8 @@
         public int StartCount { get; set; } 
 
         public bool IsCompleted { get; set; } = false;
+
+        public bool IsDeleted { get; set; } = false;
+
     }
 }

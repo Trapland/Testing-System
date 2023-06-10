@@ -42,13 +42,6 @@
 
                             </div>
 
-
-                            @*<div class="col-sm-1">
-                            @if (Model.isPersonal)
-                            {
-                            <img src="~/img/icons/pencil.svg" role="button" data-ref-field="realname" />
-                            }
-                            </div>*@
                         </div>
                         <hr>
                         <div class="row">
@@ -72,117 +65,93 @@
                             <div class="col-sm-8 text-secondary">
                                 <span id="email" class="p-2">@(Model.Email)</span>
                             </div>
-                            @*<div class="col-sm-1">
-                            @if (Model.isPersonal)
-                            {
-                            <img src="~/img/icons/pencil.svg" role="button" data-ref-field="email" />
-                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="red" class="bi bi-pencil" viewBox="0 0 16 16">
-                            <path d="M12.146.146a.5.5 0 0 1 .708 0l3 3a.5.5 0 0 1 0 .708l-10 10a.5.5 0 0 1-.168.11l-5 2a.5.5 0 0 1-.65-.65l2-5a.5.5 0 0 1 .11-.168l10-10zM11.207 2.5 13.5 4.793 14.793 3.5 12.5 1.207 11.207 2.5zm1.586 3L10.5 3.207 4 9.707V10h.5a.5.5 0 0 1 .5.5v.5h.5a.5.5 0 0 1 .5.5v.5h.293l6.5-6.5zm-9.761 5.175-.106.106-1.528 3.821 3.821-1.528.106-.106A.5.5 0 0 1 5 12.5V12h-.5a.5.5 0 0 1-.5-.5V11h-.5a.5.5 0 0 1-.468-.325z" />
-                            </svg>
-                            }
-                            </div>*@
+
                         </div>
-                        @*<div class="col-sm-1">
-                        @if (Model.isPersonal)
-                        {
-                        <img src="~/img/icons/pencil.svg" role="button" data-ref-field="phone" />
-                        }
-                        </div>*@
+
                     </div>
-                    @*<div class="col-sm-1">
-                    @if (Model.isPersonal)
-                    {
-                    <img src="~/img/icons/pencil.svg" role="button" data-ref-field="mobile" />
-                    }
-                    </div>*@
+
                 </div>
-                @*                        <div class="row">
-                <div class="col-sm-12">
-                <a class="btn btn-info " target="__blank" href="https://www.bootdey.com/snippets/view/profile-edit-data-and-skills">Edit</a>
-                </div>
-                </div>*@
+
             </div>
         </div>
 
     </div>
 </div>
+@if (Model.UserStatus == "teacher")
+{
+    <div class="container">
+        <div class="row">
 
+            @foreach (var Test in Model.Tests)
+            {
+                @Html.DisplayFor(m => Test, "TestEditCard")
+            }
+        </div>
+    </div>
+}
 
+<div class="modal fade" id="exampleModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <form asp-controller="Home" asp-action="DeleteTest" method="post">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="exampleModalLabel">Test delete</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <label for="user-option">Are you sure to delete this test?</label><br />
+                    <label id="test"></label>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                    <button type="button" class="btn btn-danger" id="delete-button">Delete</button>
+                </div>
 
+            </form>
+        </div>
+    </div>
+</div>
 <script>
     document.addEventListener("DOMContentLoaded", () => {
-        for (let pencil of document.querySelectorAll("[data-ref-field]")) {
-            pencil.addEventListener("click", editClick);
+        const deletesButtons = document.querySelectorAll("[data]");
+        for (let deleteButton of deletesButtons) {
+            deleteButton.addEventListener("click", deleteClick);
         }
-    })
-    //let editElem;
-    function editClick(e) {
-        //if (editElem == e.target) {
-        //    editElem = "";
-        //    return;
-        //}
-        //editElem = e.target;
-        e.target.oldsrc = e.target.src;
-        e.target.src = "../../img/icons/pencil-square.svg";
-        const targetId = e.target.getAttribute("data-ref-field");
-        const targetElement = document.getElementById(targetId);
-        str = targetElement.innerHTML;
-        targetElement.setAttribute("contenteditable", "true");
-        targetElement.focus();
-        targetElement.onblur = editingFinished;
-        targetElement.onkeydown = editingKeydown;
-        targetElement.oldtext = targetElement.innerText;
-        targetElement.escPressed = false;
-        e.target.removeEventListener("click", editClick);
+        const loginButton = document.getElementById("delete-button");
+        if (loginButton) {
+            loginButton.addEventListener("click", deleteButtonClick);
+        }
+    });
+
+    function deleteClick(e) {
+        document.getElementById("test").value = e.target.getAttribute("data");
+        console.log(document.getElementById("test").value);
     }
-    function editingFinished(e) {
-        const elem = e.target;
-        if (elem.innerText != elem.oldtext && elem.escPressed === false && confirm("Зберегти зміни?")) {
-            const data = {
-                field: elem.id,
-                value: elem.innerText
-            }
-            const dataStr = JSON.stringify(data);
-            console.log("Sending: " + dataStr);
-            window.fetch("/User/Update", {
-                method: "PUT",
-                headers: {
-                    "Content-Type": "application/json"
-                },
-                body: dataStr
-            })
-                .then(r => {
-                    if (r.status != 200) {
-                        alert("Response unsuccessfull");
-                        return;
-                    }
-                    return r.json();
-                })
-                .then(j => {
-                    console.log(j);
-                    if (data.field === "email")
-                        window.location.reload();
-                    if (j.status != 'OK') {
-                        alert(j.data);
-                    }
-                });
-        }
-        else {
-            elem.innerText = elem.oldtext;
-        }
-        const img = document.querySelector(`[data-ref-field=${elem.id}]`);
-        img.src = img.oldsrc;
-        elem.removeAttribute("contenteditable");
-        setTimeout(() => img.addEventListener("click", editClick), 250);
-    }
-    function editingKeydown(e) {
-        if (e.key === "Enter") {
-            e.target.blur();
-        }
-        if (e.key === "Escape") {
-            const edit = document.getElementById(`${e.target.id}`);
-            edit.escPressed = true;
-            e.target.blur();
-        }
+
+    function deleteButtonClick(e) {
+        document.getElementById("test").value = e.target.getAttribute("data");
+        console.log(document.getElementById("test").value);
+
+        const testIdInput = document.getElementById("test");
+        if (!testIdInput) throw "testIdInput not found";
+        const testId = testIdInput.value;
+
+        window.fetch("/Home/DeleteTest", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/x-www-form-urlencoded"
+            },
+            body: `testId=${testId}`
+        })
+            .then(r => r.text())
+            .then(t => {
+                console.log(t);
+                if (t === "OK") {
+                    window.location.reload();
+                }
+                else {
+                    console.log("Something went wrong");
+                }
+            });
     }
 </script>

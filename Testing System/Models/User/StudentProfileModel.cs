@@ -1,4 +1,6 @@
-﻿namespace Testing_System.Models.User
+﻿using Testing_System.Models.Test;
+
+namespace Testing_System.Models.User
 {
     public class StudentProfileModel : ProfileModel
     {
@@ -13,6 +15,10 @@
         public String Email { get; set; }
 
         public String Avatar { get; set; }
+
+        public String UserStatus { get; set; }
+
+        public List<TestViewModel> Tests { get; set; }
 
 
         public StudentProfileModel(Data.Entity.Student student)

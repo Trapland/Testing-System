@@ -1,4 +1,6 @@
-﻿namespace Testing_System.Models.User
+﻿using Testing_System.Models.Test;
+
+namespace Testing_System.Models.User
 {
     public interface ProfileModel
     {
@@ -13,5 +15,10 @@
         public String Email { get; set; }
 
         public String Avatar { get; set; }
+
+        public String UserStatus { get; set; }
+
+        public List<TestViewModel> Tests { get; set; }
+
     }
 }

@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Primitives;
 using System.Diagnostics;
 using System.Drawing;
+using System.Linq;
 using System.Security.Claims;
 using Testing_System.Data;
 using Testing_System.Data.Entity;
@@ -60,7 +61,7 @@ namespace Testing_System.Controllers
             {
                 userStatus = HttpContext.Session.GetString("userStatus"),
                 Tests = _dataContext.Tests
-                .Where(t => t.IsCompleted)
+                .Where(t => t.IsCompleted && !t.IsDeleted)
                 .AsEnumerable()
                 .Select(t => new TestViewModel()
                 {
@@ -650,6 +651,7 @@ namespace Testing_System.Controllers
                     {
                         String userLogin = HttpContext.User.Claims.First(c => c.Type == ClaimTypes.NameIdentifier).Value;
                     }
+                    model.UserStatus = userStatus;
                     return View(model);
 
                 }
@@ -669,6 +671,14 @@ namespace Testing_System.Controllers
                     {
                         String userLogin = HttpContext.User.Claims.First(c => c.Type == ClaimTypes.NameIdentifier).Value;
                     }
+                    model.UserStatus = userStatus;
+                    model.Tests = _dataContext.Tests.Where(t => t.TeacherId == model.Id && !t.IsDeleted && t.IsCompleted).Select(t => new TestViewModel()
+                    {
+                        Name = t.Name,
+                        Id = t.Id,
+                        Description = t.Description,
+                        Count = t.Count,
+                    }).ToList();
                     return View(model);
 
                 }
@@ -683,20 +693,32 @@ namespace Testing_System.Controllers
             }
 
         }
+        [HttpPost]
+        public String DeleteTest([FromRoute] String id)
+        {
+            Guid TestId = Guid.Parse(id);
+            Test? test = _dataContext.Tests.FirstOrDefault(t => t.Id == TestId);
+            if(test is not null)
+            {
+                test.IsDeleted = true;
+            }
+            Console.WriteLine("Test deleted");
+            return "OK";
+        }
 
         public IActionResult History(HistoryViewModel historyViewModel)
         {
             historyViewModel.userStatus = HttpContext.Session.GetString("userStatus");
-            if(historyViewModel.userStatus == "teacher")
+            if (historyViewModel.userStatus == "teacher")
             {
                 Guid teacherId = Guid.Parse(HttpContext.Session.GetString("authUserId"));
                 List<Test> tests = _dataContext.Tests.Where(t => t.TeacherId == teacherId).ToList();
                 List<Guid> sessionIds = new();
                 for (int i = 0; i < tests.Count; i++)
                 {
-                   sessionIds.AddRange(_dataContext.History.Where(t => t.TestId == tests[i].Id).Select(t => t.SessionId).Distinct().ToList());
+                    sessionIds.AddRange(_dataContext.History.Where(t => t.TestId == tests[i].Id).Select(t => t.SessionId).Distinct().ToList());
                 }
-                List<History> history = new ();
+                List<History> history = new();
                 for (int i = 0; i < sessionIds.Count; i++)
                 {
                     history.Add(_dataContext.History.FirstOrDefault(h => h.SessionId == sessionIds[i]));
@@ -717,18 +739,56 @@ namespace Testing_System.Controllers
                 {
                     historyViewModel.Tests.Add(new TestHistoryViewModel()
                     {
-                        Name= students_tests[i].Name,
+                        Name = students_tests[i].Name,
                         Description = students_tests[i].Description,
                         SessionId = sessionIds[i].ToString(),
-                        student = new() { 
-                        Name = students[i].Name,
-                        Surname = students[i].Surname,
-                        Id = students[i].Id.ToString(),
+                        student = new()
+                        {
+                            Name = students[i].Name,
+                            Surname = students[i].Surname,
+                            Id = students[i].Id.ToString(),
                         }
 
                     });
                 }
 
+            }
+            else if (historyViewModel.userStatus == "student")
+            {
+                Guid studentId = Guid.Parse(HttpContext.Session.GetString("authUserId"));
+                List<History> history = _dataContext.History.Where(h => h.StudentId == studentId).ToList();
+                List<History> history2 = new();
+                history2.AddRange(history.DistinctBy(h => h.SessionId).ToList());
+
+                List<Guid> sessionIds = new();
+                for (int i = 0; i < history2.Count; i++)
+                {
+                    sessionIds.AddRange(_dataContext.History.Where(t => t.TestId == history[i].TestId).Select(t => t.SessionId).Distinct().ToList());
+                }
+
+                List<Test> students_tests = new();
+
+
+                for (int i = 0; i < history2.Count; i++)
+                {
+
+                    students_tests.Add(_dataContext.Tests.FirstOrDefault(t => t.Id == history2[i].TestId));
+                }
+                historyViewModel.Tests = new();
+                for (int i = 0; i < students_tests.Count; i++)
+                {
+                    historyViewModel.Tests.Add(new TestHistoryViewModel()
+                    {
+                        Name = students_tests[i].Name,
+                        Description = students_tests[i].Description,
+                        SessionId = sessionIds[i].ToString(),
+
+                    });
+                }
+            }
+            else
+            {
+                return View("Index");
             }
 
             return View(historyViewModel);
