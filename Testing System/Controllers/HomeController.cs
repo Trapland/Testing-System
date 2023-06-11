@@ -270,8 +270,8 @@ namespace Testing_System.Controllers
         public IActionResult ViewHistoryTestPage([FromRoute] String id)
         {
             Guid SessionId = Guid.Parse(id);
-            History history = _dataContext.History.FirstOrDefault(h => h.SessionId == SessionId);
-            Test test = _dataContext.Tests.FirstOrDefault(t => t.Id == history.TestId);
+            List<History> history = _dataContext.History.Where(h => h.SessionId == SessionId).ToList();
+            Test test = _dataContext.Tests.FirstOrDefault(t => t.Id == history[0].TestId);
 
             TestModel model = new()
             {
@@ -321,10 +321,14 @@ namespace Testing_System.Controllers
             {
                 for (int j = 0; j < model.Questions[i].Answers.Count; j++)
                 {
-                    if (model.Questions[i].Answers[j].Id == history.AnswerId.ToString())
+                    for (int k = 0; k < history.Count; k++)
                     {
-                        model.Questions[i].Answers[j].isMarked = true;
-                        break;
+                        if (model.Questions[i].Answers[j].Id == history[k].AnswerId.ToString())
+                        {
+                            model.Questions[i].Answers[j].isMarked = true;
+                            break;
+                        }
+
                     }
 
                 }
