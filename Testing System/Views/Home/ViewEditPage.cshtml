@@ -5,12 +5,23 @@
     @for (int i = 0; i < Model.Questions.Count; i++)
     {
         <div>
+            <div>Question: </div>
             <input type="text" name="Questions[@i].Description" value="@Model.Questions[i].Description" />
+            <div>ImageURL: </div>
+
+            @if (Model.Questions[i].ImageURL is not null)
+            {
+                <div>
+                    <input type="text" name="Questions[@i].ImageURL" value="@Model.Questions[i].ImageURL" />
+                </div>
+            }
             <input type="hidden" name="Questions[@i].Id" value="@Model.Questions[i].Id" />
 
             @for (int j = 0; j < Model.Questions[i].Answers.Count; j++)
             {
                 <div>
+                    <div>Answer: </div>
+
                     <input type="text" name="Questions[@i].Answers[@j].Description" value="@Model.Questions[i].Answers[j].Description" />
                     <input type="text" name="Questions[@i].Answers[@j].Value" value="@Model.Questions[i].Answers[j].Value" />
                     <input type="hidden" name="Questions[@i].Answers[@j].Id" value="@Model.Questions[i].Answers[j].Id" />

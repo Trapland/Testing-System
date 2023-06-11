@@ -13,6 +13,9 @@
 
         public int Count { get; set; }
 
+        public TimeSpan Time { get; set; }
+
+
         public List<QuestionModel> Questions { get; set; } = null!;
 
         public List<AnswerViewModel> Answers { get; set; }

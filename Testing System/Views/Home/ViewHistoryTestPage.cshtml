@@ -3,6 +3,10 @@
 @for (int i = 0; i < Model.Questions.Count; i++)
 {
     <h4>@Model.Questions[i].Description</h4>
+    @if (Model.Questions[i].ImageURL is not null)
+    {
+        <img src="@Model.Questions[i].ImageURL" style="width: 300px;">
+    }
     <ul>
         @for (int j = 0; j < Model.Questions[i].Answers.Count; j++)
         {
@@ -11,8 +15,8 @@
                 @Model.Questions[i].Answers[j].isMarked == true
                 ? "yellow"
                : "" )">
-                @Model.Questions[i].Answers[j].Description
-                        </span>
+                    @Model.Questions[i].Answers[j].Description
+                </span>
                 @if (@Model.Questions[i].Answers[j].isMax == true)
                 {
                     <p class="green">Сorrect Answer!</p>

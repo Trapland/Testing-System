@@ -116,7 +116,14 @@ namespace Testing_System.Controllers
             Guid testId = Guid.Parse(HttpContext.Session.GetString("testId"));
             Test test = _dataContext.Tests.FirstOrDefault(t => t.Id == testId);
             test.Count = HttpContext.Session.GetInt32("quesCount").Value;
-            test.StartCount = createTestModel.StartCount;
+            if(createTestModel.StartCount < test.Count && test.Count > 0 )
+            {
+                test.StartCount = createTestModel.StartCount;
+            }
+            else
+            {
+                test.StartCount = test.Count;
+            }
             test.IsCompleted = true;
             _dataContext.SaveChanges();
             HttpContext.Session.Remove("quesCount");
@@ -225,6 +232,8 @@ namespace Testing_System.Controllers
                 {
                     Description = q.Description,
                     Id = q.Id.ToString(),
+                    ImageURL = q.ImageURL,
+
                 }).ToList()
             };
 
@@ -277,6 +286,7 @@ namespace Testing_System.Controllers
                 {
                     Description = q.Description,
                     Id = q.Id.ToString(),
+                    ImageURL = q.ImageURL,
                 }).ToList()
             };
 
@@ -338,6 +348,7 @@ namespace Testing_System.Controllers
                 StudentId = _dataContext.Students.FirstOrDefault(s => s.Id.ToString() == HttpContext.Session.GetString("authUserId")).Id.ToString(),
                 Count = test.Count,
                 StartCount = test.StartCount,
+                Time = test.Time,
                 Questions = _dataContext.Questions
                 .Where(q => q.TestId == TestId)
                 .AsEnumerable()
@@ -345,6 +356,7 @@ namespace Testing_System.Controllers
                 {
                     Description = q.Description,
                     Id = q.Id.ToString(),
+                    ImageURL= q.ImageURL,
                 }).ToList()
             };
 
@@ -363,6 +375,10 @@ namespace Testing_System.Controllers
                 RandomSort(model.Questions[i].Answers);
             }
             RandomSort(model.Questions);
+            if(model.Count != model.StartCount)
+            {
+                model.Questions.RemoveAt(model.StartCount);
+            }
             int sum = 0;
             for (int i = 0; i < model.Questions.Count; i++)
             {
@@ -374,6 +390,7 @@ namespace Testing_System.Controllers
                 }
                 sum += value;
             }
+
             HttpContext.Session.SetInt32("Total", sum);
             return View(model);
         }
@@ -385,17 +402,20 @@ namespace Testing_System.Controllers
             List<AnswerViewModel> answers = testModel.Answers;
             for (int i = 0; i < answers.Count; i++)
             {
-                History history = new()
+                if (answers[i].AnswerId is not null)
                 {
-                    Id = Guid.NewGuid(),
-                    SessionId = sessionId,
-                    TestId = Guid.Parse(HttpContext.Session.GetString("Testid")),
-                    StudentId = Guid.Parse(HttpContext.Session.GetString("authUserId")),
-                    AnswerId = Guid.Parse(answers[i].AnswerId),
-                    QuestionId = Guid.Parse(answers[i].QuestionId),
-                    Marked = true
-                };
-                _dataContext.History.Add(history);
+                    History history = new()
+                    {
+                        Id = Guid.NewGuid(),
+                        SessionId = sessionId,
+                        TestId = Guid.Parse(HttpContext.Session.GetString("Testid")),
+                        StudentId = Guid.Parse(HttpContext.Session.GetString("authUserId")),
+                        AnswerId = Guid.Parse(answers[i].AnswerId),
+                        QuestionId = Guid.Parse(answers[i].QuestionId),
+                        Marked = true
+                    };
+                    _dataContext.History.Add(history);
+                }
             }
             _dataContext.SaveChanges();
             HttpContext.Session.SetString("SessionId", sessionId.ToString());
@@ -725,6 +745,8 @@ namespace Testing_System.Controllers
                 {
                     Description = q.Description,
                     Id = q.Id.ToString(),
+                    ImageURL = q.ImageURL,
+
                 }).ToList(),
             };
             for (int i = 0; i < model.Questions.Count; i++)
@@ -750,6 +772,7 @@ namespace Testing_System.Controllers
             {
                 Question q = _dataContext.Questions.FirstOrDefault(q => q.Id.ToString() == model.Questions[i].Id);
                 q.Description = model.Questions[i].Description;
+                q.ImageURL = model.Questions[i].ImageURL;
                 for (int j = 0; j < model.Questions[i].Answers.Count; j++)
                 {
                     Answer a = _dataContext.Answers.FirstOrDefault(a => a.Id.ToString() == model.Questions[i].Answers[j].Id);

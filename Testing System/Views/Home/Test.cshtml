@@ -1,10 +1,13 @@
 ﻿@model Testing_System.Models.Test.TestModel
 
-@using (Html.BeginForm("SaveAnswers", "Home", FormMethod.Post))
-{
+<form id="AnswerForm" method="post" asp-controller="Home" asp-action="SaveAnswers">
     @for (int i = 0; i < Model.Questions.Count; i++)
     {
         <h4>@Model.Questions[i].Description</h4>
+        @if(Model.Questions[i].ImageURL is not null)
+        {
+            <img src="@Model.Questions[i].ImageURL" style="width: 300px;">
+        }
         <div>
             <input type="radio" name="Answers[@i].AnswerId" value="@Model.Questions[i].Answers[0].Id" />
             @Model.Questions[i].Answers[0].Description
@@ -26,4 +29,56 @@
     }
 
     <button class="btn btn-success" type="submit">Finish test</button>
-}
+</form>
+
+<div id="timer" style="position:fixed; top: 70px; right: 50px;">Timer: <span id="countdown">@Model.Time</span></div>
+
+<script>
+    function parseTime(timeString) {
+        const timeParts = timeString.split(':');
+
+        if (timeParts.length !== 3) {
+            throw new Error('Invalid time format');
+        }
+
+        const [hours, minutes, seconds] = timeParts;
+
+        return {
+            hours: parseInt(hours),
+            minutes: parseInt(minutes),
+            seconds: parseInt(seconds)
+        };
+    }
+
+    function startTimer() {
+        const timeString = document.getElementById("countdown").innerHTML; // Time obtained from the backend
+        let timeObject;
+
+        try {
+            timeObject = parseTime(timeString);
+        } catch (error) {
+            console.error(error);
+            return;
+        }
+
+        let totalSeconds = (timeObject.hours * 3600) + (timeObject.minutes * 60) + timeObject.seconds;
+
+        const timer = setInterval(() => {
+            totalSeconds--;
+
+            if (totalSeconds <= 0) {
+                clearInterval(timer);
+                document.getElementById("AnswerForm").submit();
+            }
+
+            const hours = Math.floor(totalSeconds / 3600);
+            const minutes = Math.floor((totalSeconds % 3600) / 60);
+            const seconds = totalSeconds % 60;
+
+            document.getElementById("countdown").innerHTML = `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+        }, 1000);
+    }
+
+    // Start the timer when the DOM is loaded
+    document.addEventListener("DOMContentLoaded", startTimer);
+</script>
