@@ -66,7 +66,7 @@ namespace Testing_System.Controllers
                 .Select(t => new TestViewModel()
                 {
                     Name = t.Name,
-                    Id= t.Id,
+                    Id = t.Id,
                     Description = t.Description,
                     Count = t.StartCount
                 })
@@ -98,7 +98,7 @@ namespace Testing_System.Controllers
             HttpContext.Session.SetInt32("quesCount", 1);
             return RedirectToAction(nameof(CreateQuestion));
         }
-        public ActionResult CreateQuestion() 
+        public ActionResult CreateQuestion()
         {
             ViewData["CounterQuestions"] = HttpContext.Session.GetInt32("quesCount");
             return View();
@@ -144,7 +144,7 @@ namespace Testing_System.Controllers
                     Difficulty = difficultyMap[$"{addQuestionModel.Difficulty}"],
                     ImageURL = addQuestionModel.ImageURL,
                     TestId = Guid.Parse(HttpContext.Session.GetString("testId"))
-            };
+                };
                 _dataContext.Questions.Add(NewQuestion);
                 Answer answer = new Answer()
                 {
@@ -201,7 +201,7 @@ namespace Testing_System.Controllers
             return View();
         }
 
-        public IActionResult StartTestPage([FromRoute] String id) 
+        public IActionResult StartTestPage([FromRoute] String id)
         {
             HttpContext.Session.SetString("Testid", id);
             return View();
@@ -261,8 +261,8 @@ namespace Testing_System.Controllers
         public IActionResult ViewHistoryTestPage([FromRoute] String id)
         {
             Guid SessionId = Guid.Parse(id);
-            List<History> history = _dataContext.History.Where(h => h.SessionId == SessionId).ToList(); 
-            Test test = _dataContext.Tests.FirstOrDefault(t => t.Id == history[0].TestId);
+            History history = _dataContext.History.FirstOrDefault(h => h.SessionId == SessionId);
+            Test test = _dataContext.Tests.FirstOrDefault(t => t.Id == history.TestId);
 
             TestModel model = new()
             {
@@ -311,13 +311,10 @@ namespace Testing_System.Controllers
             {
                 for (int j = 0; j < model.Questions[i].Answers.Count; j++)
                 {
-                    for (int k = 0; k < history.Count; k++)
+                    if (model.Questions[i].Answers[j].Id == history.AnswerId.ToString())
                     {
-                        if (model.Questions[i].Answers[j].Id == history[k].AnswerId.ToString())
-                        {
-                            model.Questions[i].Answers[j].isMarked = true;
-                            break;
-                        }
+                        model.Questions[i].Answers[j].isMarked = true;
+                        break;
                     }
 
                 }
@@ -327,7 +324,7 @@ namespace Testing_System.Controllers
 
         public IActionResult Test()
         {
-            if(HttpContext.Session.GetString("Testid") == null)
+            if (HttpContext.Session.GetString("Testid") == null)
             {
                 return View("Index");
             }
@@ -401,7 +398,7 @@ namespace Testing_System.Controllers
                 _dataContext.History.Add(history);
             }
             _dataContext.SaveChanges();
-            HttpContext.Session.SetString("SessionId",sessionId.ToString());
+            HttpContext.Session.SetString("SessionId", sessionId.ToString());
             return RedirectToAction("Result");
         }
 
@@ -694,16 +691,76 @@ namespace Testing_System.Controllers
 
         }
         [HttpPost]
-        public String DeleteTest([FromRoute] String id)
+        public String DeleteTest()
         {
-            Guid TestId = Guid.Parse(id);
+            StringValues idValues = Request.Form["testId"];
+            String id = idValues[0] ?? "";
+            if (idValues.Count == 0)
+            {
+                return "Missed required parameter: testId";
+            }
+            Guid TestId = Guid.Parse(idValues);
             Test? test = _dataContext.Tests.FirstOrDefault(t => t.Id == TestId);
-            if(test is not null)
+            if (test is not null)
             {
                 test.IsDeleted = true;
+                _dataContext.SaveChanges();
             }
             Console.WriteLine("Test deleted");
             return "OK";
+        }
+
+        public IActionResult ViewEditPage([FromRoute] String id)
+        {
+            Guid TestId = Guid.Parse(id);
+            Test test = _dataContext.Tests.FirstOrDefault(t => t.Id == TestId);
+            TestModel model = new()
+            {
+                Id = test.Id.ToString(),
+                TeacherId = test.TeacherId.ToString(),
+                Questions = _dataContext.Questions
+                .Where(q => q.TestId == TestId)
+                .AsEnumerable()
+                .Select(q => new QuestionModel()
+                {
+                    Description = q.Description,
+                    Id = q.Id.ToString(),
+                }).ToList(),
+            };
+            for (int i = 0; i < model.Questions.Count; i++)
+            {
+                model.Questions[i].Answers = _dataContext.Answers
+                    .Where(a => a.QusetionId.ToString() == model.Questions[i].Id)
+                    .AsEnumerable()
+                    .Select(a => new AnswerModel()
+                    {
+                        Value = a.Value,
+                        Description = a.Description,
+                        Id = a.Id.ToString(),
+                    })
+                    .ToList();
+            }
+
+            return View(model);
+        }
+
+        public IActionResult SaveEdit(TestModel model)
+        {
+            for (int i = 0; i < model.Questions.Count; i++)
+            {
+                Question q = _dataContext.Questions.FirstOrDefault(q => q.Id.ToString() == model.Questions[i].Id);
+                q.Description = model.Questions[i].Description;
+                for (int j = 0; j < model.Questions[i].Answers.Count; j++)
+                {
+                    Answer a = _dataContext.Answers.FirstOrDefault(a => a.Id.ToString() == model.Questions[i].Answers[j].Id);
+                    a.Description = model.Questions[i].Answers[j].Description;
+                    a.Value = model.Questions[i].Answers[j].Value;
+                    _dataContext.SaveChanges();
+                }
+
+            }
+
+            return RedirectToAction("Index");
         }
 
         public IActionResult History(HistoryViewModel historyViewModel)
@@ -763,7 +820,7 @@ namespace Testing_System.Controllers
                 List<Guid> sessionIds = new();
                 for (int i = 0; i < history2.Count; i++)
                 {
-                    sessionIds.AddRange(_dataContext.History.Where(t => t.TestId == history[i].TestId).Select(t => t.SessionId).Distinct().ToList());
+                    sessionIds.Add(history2[i].SessionId);
                 }
 
                 List<Test> students_tests = new();

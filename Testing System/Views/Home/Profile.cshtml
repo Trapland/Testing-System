@@ -5,7 +5,7 @@
     ViewData["Title"] = "Profile";
 }
 <div>
-    <h1 class="display-4" style="font-weight: 300;">Profile</h1>
+    <h1 class="display-4" style="font-weight: 300; margin-left: 10px">Profile</h1>
 </div>
 
 <div class="container">
@@ -100,7 +100,7 @@
                 </div>
                 <div class="modal-body">
                     <label for="user-option">Are you sure to delete this test?</label><br />
-                    <label id="test"></label>
+                    <input type="hidden" id="test">
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
@@ -117,9 +117,9 @@
         for (let deleteButton of deletesButtons) {
             deleteButton.addEventListener("click", deleteClick);
         }
-        const loginButton = document.getElementById("delete-button");
-        if (loginButton) {
-            loginButton.addEventListener("click", deleteButtonClick);
+        const delButton = document.getElementById("delete-button");
+        if (delButton) {
+            delButton.addEventListener("click", deleteButtonClick);
         }
     });
 
@@ -129,9 +129,6 @@
     }
 
     function deleteButtonClick(e) {
-        document.getElementById("test").value = e.target.getAttribute("data");
-        console.log(document.getElementById("test").value);
-
         const testIdInput = document.getElementById("test");
         if (!testIdInput) throw "testIdInput not found";
         const testId = testIdInput.value;
