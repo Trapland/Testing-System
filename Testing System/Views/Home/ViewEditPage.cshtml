@@ -2,19 +2,27 @@
 
 
 <form method="post" asp-controller="Home" asp-action="SaveEdit">
+    <div>Test name: </div>
+    <input type="text" name="Name" value="@Model.Name" />
+    <div>Test description: </div>
+    <input type="text" name="Description" value="@Model.Description" />
+    <div>Test time: </div>
+    <input type="text" name="Time" value="@Model.Time" />
+    <input type="hidden" name="Id" value="@Model.Id" />
+
+    <br />
+    <br />
+
+
     @for (int i = 0; i < Model.Questions.Count; i++)
     {
         <div>
             <div>Question: </div>
             <input type="text" name="Questions[@i].Description" value="@Model.Questions[i].Description" />
             <div>ImageURL: </div>
-
-            @if (Model.Questions[i].ImageURL is not null)
-            {
-                <div>
-                    <input type="text" name="Questions[@i].ImageURL" value="@Model.Questions[i].ImageURL" />
-                </div>
-            }
+            <div>
+                <input type="text" name="Questions[@i].ImageURL" value="@Model.Questions[i].ImageURL" />
+            </div>
             <input type="hidden" name="Questions[@i].Id" value="@Model.Questions[i].Id" />
 
             @for (int j = 0; j < Model.Questions[i].Answers.Count; j++)
@@ -28,6 +36,8 @@
                 </div>
             }
         </div>
+        <br />
+        <br />
     }
 
     <a asp-controller="Home" asp-action="Index" class="btn btn-secondary">Back</a>

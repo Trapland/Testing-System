@@ -738,6 +738,9 @@ namespace Testing_System.Controllers
             {
                 Id = test.Id.ToString(),
                 TeacherId = test.TeacherId.ToString(),
+                Description = test.Description,
+                Name = test.Name,
+                Time = test.Time,
                 Questions = _dataContext.Questions
                 .Where(q => q.TestId == TestId)
                 .AsEnumerable()
@@ -768,8 +771,13 @@ namespace Testing_System.Controllers
 
         public IActionResult SaveEdit(TestModel model)
         {
+            Test t = _dataContext.Tests.FirstOrDefault(t => t.Id.ToString() == model.Id);
+            t.Description = model.Description;
+            t.Name = model.Name;
+            t.Time = model.Time;
             for (int i = 0; i < model.Questions.Count; i++)
             {
+                
                 Question q = _dataContext.Questions.FirstOrDefault(q => q.Id.ToString() == model.Questions[i].Id);
                 q.Description = model.Questions[i].Description;
                 q.ImageURL = model.Questions[i].ImageURL;

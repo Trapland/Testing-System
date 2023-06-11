@@ -5,6 +5,10 @@
 
         public String Id { get; set; } = null!;
 
+        public String? Name { get; set; }
+
+        public String? Description { get; set; }
+
         public String TeacherId { get; set; } = null!;
 
         public String StudentId { get; set; } = null!;
@@ -14,7 +18,6 @@
         public int Count { get; set; }
 
         public TimeSpan Time { get; set; }
-
 
         public List<QuestionModel> Questions { get; set; } = null!;
 
